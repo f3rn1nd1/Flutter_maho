@@ -1,10 +1,11 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import '../models/auth_response.dart';
 
 class AuthService {
-  final String baseUrl = "http://10.10.160.134:8888/api";
+  final String baseUrl = dotenv.get('BASE_URL');
 
   // Método para iniciar sesión
   Future<AuthResponse> login(String email, String password) async {

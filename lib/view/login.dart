@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'profile.dart';
+import 'profile.dart'; // Importar la vista de perfil
+import 'register.dart'; // Importar la vista de registro
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -79,16 +80,18 @@ class _LoginPageState extends State<LoginPage> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Card(
+            elevation: 5, // Sombra de la tarjeta
+            margin: const EdgeInsets.all(16), // Márgenes exteriores
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10), // Bordes redondeados
             ),
-            elevation: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
+            child: Container(
+              width: 400, // Ancho fijo para la tarjeta
+              padding: const EdgeInsets.all(20), // Márgenes internos
               child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min, // Tamaño mínimo de la columna
                 children: [
+                  // Título de la tarjeta
                   const Text(
                     'Iniciar Sesión',
                     style: TextStyle(
@@ -98,27 +101,33 @@ class _LoginPageState extends State<LoginPage> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
-                  // Email Field
+                  // Campo de correo electrónico
                   TextField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       labelText: 'Correo Electrónico',
                       border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.email),
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 10),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  // Password Field
+                  const SizedBox(height: 12),
+                  // Campo de contraseña
                   TextField(
                     controller: _passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(
                       labelText: 'Contraseña',
                       border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.lock),
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 10),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  // Remember Me Checkbox
+                  const SizedBox(height: 12),
+                  // Casilla de "Recuérdame"
                   Row(
                     children: [
                       Checkbox(
@@ -133,13 +142,17 @@ class _LoginPageState extends State<LoginPage> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  // Login Button
+                  // Botón de inicio de sesión
                   ElevatedButton(
                     onPressed: _handleLogin,
+                    style: ElevatedButton.styleFrom(
+                      minimumSize:
+                          const Size(double.infinity, 50), // Ancho completo
+                    ),
                     child: const Text('Ingresar'),
                   ),
                   const SizedBox(height: 16),
-                  // Additional Links
+                  // Enlaces adicionales
                   TextButton(
                     onPressed: () {
                       // Acción para recuperar contraseña
@@ -148,7 +161,12 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   TextButton(
                     onPressed: () {
-                      // Acción para registrarse
+                      // Navegar a la vista de registro (RegisterPage)
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const RegisterPage()),
+                      );
                     },
                     child: const Text('¿No tienes una cuenta? Regístrate'),
                   ),

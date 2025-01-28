@@ -29,7 +29,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text("Perfil del Estudiante"),
+        title: const Text("Sistema de agenda MAHO"),
       ),
       body: screenWidth < mobileBreakpoint
           ? _buildMobileLayout() // Diseño para móviles

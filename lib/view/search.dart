@@ -1,18 +1,181 @@
 import 'package:flutter/material.dart';
 
-class SearchTable extends StatefulWidget {
+class SearchTable extends StatelessWidget {
   const SearchTable({super.key});
 
   @override
-  _SearchTableState createState() => _SearchTableState();
-}
-
-class _SearchTableState extends State<SearchTable> {
-  bool _showAllColumns =
-      false; // Estado para controlar la visibilidad de las columnas
-
-  @override
   Widget build(BuildContext context) {
+    // Datos de ejemplo
+    final tableData = [
+      {
+        "name": "Carlos Ramírez",
+        "email": "carlos@example.com",
+        "phone": "987654321",
+        "anexo": "Ext. 101",
+        "address": "Av. Siempre Viva 123, Ciudad",
+        "position": "Gerente General",
+      },
+      {
+        "name": "María Gómez",
+        "email": "maria@example.com",
+        "phone": "876543210",
+        "anexo": "Ext. 102",
+        "address": "Calle Principal 456, Ciudad",
+        "position": "Jefa de Ventas",
+      },
+      {
+        "name": "Luis Pérez",
+        "email": "luis@example.com",
+        "phone": "765432109",
+        "anexo": "Ext. 103",
+        "address": "Barrio Central 789, Ciudad",
+        "position": "Coordinador de Proyectos",
+      },
+    ];
+
+    // Función para mostrar el modal del botón "+"
+    void showInfoModal(BuildContext context, Map<String, String> rowData) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              width: MediaQuery.of(context).size.width * 0.8,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Título del modal
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Información adicional",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Cierra el modal
+                        },
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+                  // Contenido adicional
+                  Text("Dirección: ${rowData['address']}"),
+                  const SizedBox(height: 8),
+                  Text("Cargo: ${rowData['position']}"),
+                  const SizedBox(height: 16),
+                  // Botón para cerrar
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Cierra el modal
+                      },
+                      child: const Text("Cerrar"),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    // Función para mostrar el modal del botón de edición
+    void showEditModal(BuildContext context, Map<String, String> rowData) {
+      final nameController = TextEditingController(text: rowData['name']);
+      final emailController = TextEditingController(text: rowData['email']);
+      final phoneController = TextEditingController(text: rowData['phone']);
+      final anexoController = TextEditingController(text: rowData['anexo']);
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              width: MediaQuery.of(context).size.width * 0.8,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Título del modal
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Editar información",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Cierra el modal
+                        },
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+                  // Formulario de edición
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(labelText: 'Nombre'),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: emailController,
+                    decoration: const InputDecoration(labelText: 'Correo'),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: phoneController,
+                    decoration: const InputDecoration(labelText: 'Teléfono'),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: anexoController,
+                    decoration: const InputDecoration(labelText: 'Anexo'),
+                  ),
+                  const SizedBox(height: 16),
+                  // Botones de acción
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          // Aquí puedes manejar la lógica de guardar cambios
+                          Navigator.of(context).pop(); // Cierra el modal
+                        },
+                        child: const Text("Guardar"),
+                      ),
+                      const SizedBox(width: 8),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Cierra el modal
+                        },
+                        child: const Text("Cancelar"),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     return Card(
       elevation: 5,
       margin: const EdgeInsets.all(16),
@@ -24,7 +187,7 @@ class _SearchTableState extends State<SearchTable> {
               decoration: InputDecoration(
                 labelText: 'Buscar',
                 hintText: 'Ingrese un nombre, correo, teléfono o anexo',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -34,35 +197,45 @@ class _SearchTableState extends State<SearchTable> {
               },
             ),
           ),
-          // Botón para expandir/colapsar la tabla
-
+          // Tabla
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
-              columns: [
-                DataColumn(
-                    label:
-                        Text("Acciones")), // Columna de acciones al principio
+              columns: const [
+                DataColumn(label: Text("")), // Columna para el botón "+"
                 DataColumn(label: Text("Nombre")),
                 DataColumn(label: Text("Correo")),
-                DataColumn(label: Text("Rol")),
-                if (_showAllColumns) DataColumn(label: Text("Teléfono")),
-                if (_showAllColumns) DataColumn(label: Text("Anexo")),
-                if (_showAllColumns) DataColumn(label: Text("Última conexión")),
+                DataColumn(label: Text("Teléfono")),
+                DataColumn(label: Text("Anexo")),
+                DataColumn(label: Text("Acciones")),
               ],
-              rows: [
-                DataRow(cells: [
+              rows: tableData.map((row) {
+                return DataRow(cells: [
+                  DataCell(
+                    IconButton(
+                      icon: const Icon(Icons.add_circle, color: Colors.blue),
+                      onPressed: () {
+                        showInfoModal(
+                            context, row); // Mostrar el modal de información
+                      },
+                    ),
+                  ),
+                  DataCell(Text(row["name"]!)),
+                  DataCell(Text(row["email"]!)),
+                  DataCell(Text(row["phone"]!)),
+                  DataCell(Text(row["anexo"]!)),
                   DataCell(
                     Row(
                       children: [
                         IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blue),
+                          icon: const Icon(Icons.edit, color: Colors.blue),
                           onPressed: () {
-                            // Lógica para editar el elemento
+                            showEditModal(
+                                context, row); // Mostrar el modal de edición
                           },
                         ),
                         IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
+                          icon: const Icon(Icons.delete, color: Colors.red),
                           onPressed: () {
                             // Lógica para eliminar el elemento
                           },
@@ -70,66 +243,8 @@ class _SearchTableState extends State<SearchTable> {
                       ],
                     ),
                   ),
-                  DataCell(Text("Motaleb")),
-                  DataCell(Text("example@gmail.com")),
-                  DataCell(Text("Admin")),
-                  if (_showAllColumns) DataCell(Text("12345678")),
-                  if (_showAllColumns) DataCell(Text("12345678")),
-                  if (_showAllColumns) DataCell(Text("No disponible")),
-                ]),
-                DataRow(cells: [
-                  DataCell(
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () {
-                            // Lógica para editar el elemento
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            // Lógica para eliminar el elemento
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  DataCell(Text("Juan Pérez")),
-                  DataCell(Text("example@gmail.com")),
-                  DataCell(Text("Usuario")),
-                  if (_showAllColumns) DataCell(Text("12345678")),
-                  if (_showAllColumns) DataCell(Text("12345678")),
-                  if (_showAllColumns) DataCell(Text("No disponible")),
-                ]),
-                DataRow(cells: [
-                  DataCell(
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () {
-                            // Lógica para editar el elemento
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            // Lógica para eliminar el elemento
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  DataCell(Text("Ana López")),
-                  DataCell(Text("example@gmail.com")),
-                  DataCell(Text("Usuario")),
-                  if (_showAllColumns) DataCell(Text("12345678")),
-                  if (_showAllColumns) DataCell(Text("12345678")),
-                  if (_showAllColumns) DataCell(Text("No disponible")),
-                ]),
-              ],
+                ]);
+              }).toList(),
             ),
           ),
         ],

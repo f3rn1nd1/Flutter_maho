@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import '../controllers/user_controller.dart';
+import '../models/user_response.dart';
 import 'profile.dart'; // Importar la vista de perfil
 import 'register.dart'; // Importar la vista de registro
 
@@ -11,6 +14,12 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  late UserController _userController; // Instancia del controlador.
+  late Future<UserResponse> _futureUsers; // Futuro que obtendrá los usuarios.
+  int _currentPage = 1; // Página actual para la paginación.
+
+
+
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _rememberMe = false;
@@ -29,7 +38,9 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     // URL de la API
-    final url = Uri.parse('http://10.10.160.113:8888/api/login');
+    //final url = Uri.parse('http://10.10.160.116:8888/api/login');
+    final url = Uri.parse("${dotenv.get('BASE_URL')}/login");
+
 
     try {
       // Hacer la solicitud POST

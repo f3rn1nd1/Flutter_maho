@@ -1,118 +1,58 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
 import 'search.dart'; // Importar la tabla de búsqueda
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final Map<String, dynamic>? userData;
+
+  const ProfilePage({super.key, this.userData});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // Datos aleatorios del estudiante
-  final String studentName = "Juan Pérez";
-  final int studentAge = 22;
-  final String studentEmail = "juan.perez@example.com";
-  final String studentAddress = "Calle Falsa 123, Ciudad";
-  final String studentPhone = "+1 234 567 890";
-  final String studentImageUrl =
-      "https://via.placeholder.com/150"; // Imagen de perfil aleatoria
+  Map<String, dynamic>? _userData;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final userData = widget.userData ?? await AuthService.getUserData();
+    setState(() {
+      _userData = userData;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Usamos MediaQuery para determinar el ancho de la pantalla
     final screenWidth = MediaQuery.of(context).size.width;
-
-    // Definimos un breakpoint para dispositivos móviles (por ejemplo, 600 píxeles)
     const mobileBreakpoint = 600;
 
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text("Perfil del Estudiante"),
+        title: const Text("Sistema de agenda MAHO"),
       ),
-      body: screenWidth < mobileBreakpoint
-          ? _buildMobileLayout() // Diseño para móviles
-          : _buildDesktopLayout(), // Diseño para escritorio/tablet
+      body: _userData == null
+          ? const Center(child: CircularProgressIndicator())
+          : screenWidth < mobileBreakpoint
+          ? _buildMobileLayout(_userData!)
+          : _buildDesktopLayout(_userData!),
     );
   }
 
   // Diseño para móviles (una columna vertical)
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(Map<String, dynamic> userData) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Perfil del estudiante
-          Card(
-            elevation: 5,
-            margin: const EdgeInsets.all(16),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircleAvatar(
-                    backgroundImage: NetworkImage(studentImageUrl),
-                    radius: 50,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    studentName,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Edad: $studentAge años",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    studentEmail,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Dirección: $studentAddress",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Teléfono: $studentPhone",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('¡Perfil actualizado!'),
-                        ),
-                      );
-                    },
-                    child: const Text('Editar Perfil'),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _buildProfileCard(userData),
           const SizedBox(height: 16),
-          // Tabla de datos (usando SearchTable)
           const SearchTable(), // Llamada al widget SearchTable
         ],
       ),
@@ -120,88 +60,85 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   // Diseño para escritorio/tablet (dos columnas horizontales)
-  Widget _buildDesktopLayout() {
+  Widget _buildDesktopLayout(Map<String, dynamic> userData) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Columna izquierda: Perfil del estudiante
         Expanded(
-          flex: 4, // Equivalente a col-4 en Bootstrap
-          child: Card(
-            elevation: 5,
-            margin: const EdgeInsets.all(20),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircleAvatar(
-                    backgroundImage: NetworkImage(studentImageUrl),
-                    radius: 50,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    studentName,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Edad: $studentAge años",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    studentEmail,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Dirección: $studentAddress",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Teléfono: $studentPhone",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('¡Perfil actualizado!'),
-                        ),
-                      );
-                    },
-                    child: const Text('Editar Perfil'),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          flex: 4,
+          child: _buildProfileCard(userData),
         ),
-        const SizedBox(width: 16), // Espaciado entre columnas
+        const SizedBox(width: 16),
         // Columna derecha: Tabla de datos (usando SearchTable)
         Expanded(
-          flex: 8, // Equivalente a col-8 en Bootstrap
-          child: const SearchTable(), // Llamada al widget SearchTable
+          flex: 8,
+          child: const SearchTable(),
         ),
       ],
+    );
+  }
+
+  // Tarjeta de perfil reutilizable
+  Widget _buildProfileCard(Map<String, dynamic> userData) {
+    return Card(
+      elevation: 5,
+      margin: const EdgeInsets.all(16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar(
+              backgroundImage: NetworkImage(userData['image_url'] ?? 'https://via.placeholder.com/150'),
+              radius: 50,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              userData['name'] ?? 'Nombre no disponible',
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Email: ${userData['email'] ?? 'No disponible'}",
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.blue,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Rol: ${userData['rol'] ?? 'No disponible'}",
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Teléfono: ${userData['telefono'] ?? 'No disponible'}",
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('¡Perfil actualizado!'),
+                  ),
+                );
+              },
+              child: const Text('Editar Perfil'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

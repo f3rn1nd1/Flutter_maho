@@ -55,7 +55,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.person),
                       contentPadding:
-                          EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                      EdgeInsets.symmetric(vertical: 12, horizontal: 10),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -68,7 +68,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.email),
                       contentPadding:
-                          EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                      EdgeInsets.symmetric(vertical: 12, horizontal: 10),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -133,7 +133,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content:
-                                Text('Por favor, completa todos los campos'),
+                            Text('Por favor, completa todos los campos'),
                           ),
                         );
                       } else if (_passwordController.text !=
@@ -159,7 +159,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                     style: ElevatedButton.styleFrom(
                       minimumSize:
-                          const Size(double.infinity, 50), // Ancho completo
+                      const Size(double.infinity, 50), // Ancho completo
                     ),
                     child: const Text('Registrarse'),
                   ),

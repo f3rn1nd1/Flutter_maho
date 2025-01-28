@@ -43,7 +43,7 @@ class SearchTable extends StatelessWidget {
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: Container(
               padding: const EdgeInsets.all(16),
-              width: MediaQuery.of(context).size.width * 0.8,
+              width: MediaQuery.of(context).size.width * 0.4,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,10 +66,18 @@ class SearchTable extends StatelessWidget {
                     ],
                   ),
                   const Divider(),
-                  // Contenido adicional
-                  Text("Dirección: ${rowData['address']}"),
+                  // Contenido adicional con SelectableText
+                  const Text(
+                    "Dirección:",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SelectableText(rowData['address'] ?? "No disponible"),
                   const SizedBox(height: 8),
-                  Text("Cargo: ${rowData['position']}"),
+                  const Text(
+                    "Cargo:",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SelectableText(rowData['position'] ?? "No disponible"),
                   const SizedBox(height: 16),
                   // Botón para cerrar
                   Align(
@@ -104,7 +112,7 @@ class SearchTable extends StatelessWidget {
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: Container(
               padding: const EdgeInsets.all(16),
-              width: MediaQuery.of(context).size.width * 0.8,
+              width: MediaQuery.of(context).size.width * 0.4,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,7 +194,7 @@ class SearchTable extends StatelessWidget {
             child: TextField(
               decoration: InputDecoration(
                 labelText: 'Buscar',
-                hintText: 'Ingrese un nombre, correo, teléfono o anexo',
+                hintText: 'Ingrese un nombre',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
@@ -220,10 +228,10 @@ class SearchTable extends StatelessWidget {
                       },
                     ),
                   ),
-                  DataCell(Text(row["name"]!)),
-                  DataCell(Text(row["email"]!)),
-                  DataCell(Text(row["phone"]!)),
-                  DataCell(Text(row["anexo"]!)),
+                  DataCell(SelectableText(row["name"]!)),
+                  DataCell(SelectableText(row["email"]!)),
+                  DataCell(SelectableText(row["phone"]!)),
+                  DataCell(SelectableText(row["anexo"]!)),
                   DataCell(
                     Row(
                       children: [

@@ -43,6 +43,15 @@ class _ProfilePageState extends State<ProfilePage> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+          // Botón de cuentas inactivas
+          ElevatedButton.icon(
+            icon: const Icon(Icons.person_off),
+            label: const Text("Cuentas inactivas"),
+            onPressed: () {
+              // Acción vacía, el botón es solo decorativo
+            },
+          ),
+          const SizedBox(height: 16),
           // Perfil del estudiante
           Card(
             elevation: 5,
@@ -57,7 +66,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     radius: 50,
                   ),
                   const SizedBox(height: 16),
-                  Text(
+                  SelectableText(
                     studentName,
                     style: const TextStyle(
                       fontSize: 24,
@@ -65,7 +74,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  SelectableText(
                     "Edad: $studentAge años",
                     style: const TextStyle(
                       fontSize: 18,
@@ -73,7 +82,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  SelectableText(
                     studentEmail,
                     style: const TextStyle(
                       fontSize: 16,
@@ -81,7 +90,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  SelectableText(
                     "Dirección: $studentAddress",
                     style: const TextStyle(
                       fontSize: 16,
@@ -89,7 +98,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  SelectableText(
                     "Teléfono: $studentPhone",
                     style: const TextStyle(
                       fontSize: 16,
@@ -121,85 +130,103 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // Diseño para escritorio/tablet (dos columnas horizontales)
   Widget _buildDesktopLayout() {
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Columna izquierda: Perfil del estudiante
-        Expanded(
-          flex: 4, // Equivalente a col-4 en Bootstrap
-          child: Card(
-            elevation: 5,
-            margin: const EdgeInsets.all(20),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircleAvatar(
-                    backgroundImage: NetworkImage(studentImageUrl),
-                    radius: 50,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    studentName,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Edad: $studentAge años",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    studentEmail,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Dirección: $studentAddress",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Teléfono: $studentPhone",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('¡Perfil actualizado!'),
-                        ),
-                      );
-                    },
-                    child: const Text('Editar Perfil'),
-                  ),
-                ],
-              ),
-            ),
+        // Botón de cuentas inactivas
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.person_off),
+            label: const Text("Cuentas inactivas"),
+            onPressed: () {
+              // Acción vacía, el botón es solo decorativo
+            },
           ),
         ),
-        const SizedBox(width: 16), // Espaciado entre columnas
-        // Columna derecha: Tabla de datos (usando SearchTable)
         Expanded(
-          flex: 8, // Equivalente a col-8 en Bootstrap
-          child: const SearchTable(), // Llamada al widget SearchTable
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Columna izquierda: Perfil del estudiante
+              Expanded(
+                flex: 4, // Equivalente a col-4 en Bootstrap
+                child: Card(
+                  elevation: 5,
+                  margin: const EdgeInsets.all(20),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(studentImageUrl),
+                          radius: 50,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          studentName,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Edad: $studentAge años",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          studentEmail,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.blue,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Dirección: $studentAddress",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Teléfono: $studentPhone",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('¡Perfil actualizado!'),
+                              ),
+                            );
+                          },
+                          child: const Text('Editar Perfil'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16), // Espaciado entre columnas
+              // Columna derecha: Tabla de datos (usando SearchTable)
+              Expanded(
+                flex: 8, // Equivalente a col-8 en Bootstrap
+                child: const SearchTable(), // Llamada al widget SearchTable
+              ),
+            ],
+          ),
         ),
       ],
     );

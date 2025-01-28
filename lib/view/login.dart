@@ -18,8 +18,6 @@ class _LoginPageState extends State<LoginPage> {
   late Future<UserResponse> _futureUsers; // Futuro que obtendrá los usuarios.
   int _currentPage = 1; // Página actual para la paginación.
 
-
-
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _rememberMe = false;
@@ -38,13 +36,8 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     // URL de la API
-<<<<<<< HEAD
-    final url = Uri.parse('http://10.10.160.116:8888/api/login');
-=======
     //final url = Uri.parse('http://10.10.160.116:8888/api/login');
     final url = Uri.parse("${dotenv.get('BASE_URL')}/login");
-
->>>>>>> 29b53941a24684ae6773062834b9724c591412b3
 
     try {
       // Hacer la solicitud POST

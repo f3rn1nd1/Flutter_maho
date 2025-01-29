@@ -43,7 +43,8 @@ class User {
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
       deletedAt: json['deleted_at'],
-      admin: json['admin'].toString(), // Convertir a String por si es int o bool
+      admin:
+          json['admin'].toString(), // Convertir a String por si es int o bool
       anexo: json['anexo'],
     );
   }
@@ -66,4 +67,8 @@ class User {
       'anexo': anexo,
     };
   }
+
+  //UserRole get role {
+  //  return admin == 0 ? UserRole.admin : UserRole.user;
+  //}
 }

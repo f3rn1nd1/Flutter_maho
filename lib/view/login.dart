@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
-import '../controllers/user_controller.dart';
-import '../models/user_response.dart';
+import '../services/auth_service.dart';
 import 'profile.dart'; // Importar la vista de perfil
 import 'register.dart'; // Importar la vista de registro
 
@@ -14,10 +11,6 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  late UserController _userController; // Instancia del controlador.
-  late Future<UserResponse> _futureUsers; // Futuro que obtendrá los usuarios.
-  int _currentPage = 1; // Página actual para la paginación.
-
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _rememberMe = false;
@@ -26,57 +19,39 @@ class _LoginPageState extends State<LoginPage> {
     final email = _emailController.text;
     final password = _passwordController.text;
 
-    // Verificar que los campos no estén vacíos
     if (email.isEmpty || password.isEmpty) {
-      if (!mounted) return; // Verificar si el widget está montado
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, completa todos los campos')),
+        const SnackBar(content: Text('Completa todos los campos')),
       );
       return;
     }
 
-    // URL de la API
-    //final url = Uri.parse('http://10.10.160.116:8888/api/login');
-    final url = Uri.parse("${dotenv.get('BASE_URL')}/login");
-
     try {
-      // Hacer la solicitud POST
-      final response = await http.post(
-        url,
-        body: {
-          'email': email,
-          'password': password,
-        },
+      final authService = AuthService();
+      final response = await authService.login({
+        'email': email,
+        'password': password,
+      });
+
+      // Guardar token y datos del usuario
+      await AuthService.saveUserData(
+        response['token'],
+        response['user'],
       );
 
-      // Verificar si el widget está montado antes de usar el contexto
       if (!mounted) return;
 
-      // Verificar el código de estado de la respuesta
-      if (response.statusCode == 200) {
-        // Si la solicitud es exitosa
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Inicio de sesión exitoso')),
-        );
-
-        // Navegar a la vista de perfil (ProfilePage)
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ProfilePage()),
-        );
-      } else {
-        // Si la solicitud falla
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${response.body}')),
-        );
-      }
+      // Navegar a ProfilePage con datos del usuario
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProfilePage(userData: response['user']),
+        ),
+      );
     } catch (e) {
-      // Verificar si el widget está montado antes de usar el contexto
       if (!mounted) return;
-
-      // Manejar errores de conexión
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error de conexión: $e')),
+        SnackBar(content: Text(e.toString())),
       );
     }
   }

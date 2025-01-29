@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import '../services/auth_service.dart';
+import 'package:projects/controllers/user_controller.dart';
 import 'profile.dart'; // Importar la vista de perfil
 import 'register.dart'; // Importar la vista de registro
 
@@ -28,17 +27,11 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     try {
-      final authService = AuthService();
-      final response = await authService.login({
+      final userController = UserController();
+      final response = await userController.login({
         'email': email,
         'password': password,
       });
-
-      // Guardar token y datos del usuario
-      await AuthService.saveUserData(
-        response['token'],
-        response['user'],
-      );
 
       if (!mounted) return;
 

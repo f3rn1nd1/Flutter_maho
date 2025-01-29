@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:projects/controllers/user_controller.dart';
 
 class SearchTable extends StatelessWidget {
   const SearchTable({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final userController = UserController();
     // Datos de ejemplo
     final tableData = [
       {

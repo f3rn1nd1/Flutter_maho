@@ -1,5 +1,3 @@
-import 'package:projects/models/user_role.dart';
-
 class User {
   final int id;
   final String name;
@@ -69,8 +67,4 @@ class User {
       'anexo': anexo,
     };
   }
-
-  //UserRole get role {
-  //  return admin == 0 ? UserRole.admin : UserRole.user;
-  //}
 }

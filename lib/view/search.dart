@@ -1,41 +1,123 @@
 import 'package:flutter/material.dart';
-import 'package:projects/controllers/user_controller.dart';
+import 'package:provider/provider.dart';
+import 'package:projects/providers/user_provider.dart';
+import '../models/user.dart';
 
 class SearchTable extends StatefulWidget {
   const SearchTable({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final userController = UserController();
-    // Datos de ejemplo
-    final tableData = [
-      {
-        "name": "Carlos Ramírez",
-        "email": "carlos@example.com",
-        "phone": "987654321",
-        "anexo": "Ext. 101",
-        "address": "Av. Siempre Viva 123, Ciudad",
-        "position": "Gerente General",
-      },
-      {
-        "name": "María Gómez",
-        "email": "maria@example.com",
-        "phone": "876543210",
-        "anexo": "Ext. 102",
-        "address": "Calle Principal 456, Ciudad",
-        "position": "Jefa de Ventas",
-      },
-      {
-        "name": "Luis Pérez",
-        "email": "luis@example.com",
-        "phone": "765432109",
-        "anexo": "Ext. 103",
-        "address": "Barrio Central 789, Ciudad",
-        "position": "Coordinador de Proyectos",
-      },
-    ];
+  SearchTableState createState() => SearchTableState();
+}
 
-  void showInfoModal(BuildContext context, Map<String, String> rowData) {
+class SearchTableState extends State<SearchTable> {
+  @override
+  void initState() {
+    super.initState();
+    // Obtener los usuarios cuando el widget se inicializa
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    userProvider.getUsers();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+
+    return Card(
+      elevation: 5,
+      margin: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              decoration: InputDecoration(
+                labelText: 'Buscar',
+                hintText: 'Ingrese un nombre',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              onChanged: (value) {
+                // Filtrar usuarios según el valor de búsqueda
+                userProvider.getUsers(search: value);
+              },
+            ),
+          ),
+          // Mostrar un indicador de carga si los datos están cargando
+          if (userProvider.isLoading)
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: CircularProgressIndicator(),
+            ),
+          // Mostrar un mensaje de error si ocurre un problema
+          if (userProvider.errorMessage.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                userProvider.errorMessage,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
+          // Tabla de usuarios
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              columns: const [
+                DataColumn(label: Text("")), // Columna para el botón "+"
+                DataColumn(label: Text("Nombre")),
+                DataColumn(label: Text("Correo")),
+                DataColumn(label: Text("Teléfono")),
+                DataColumn(label: Text("Anexo")),
+                DataColumn(label: Text("Acciones")),
+              ],
+              rows: userProvider.users.map((user) {
+                return DataRow(cells: [
+                  DataCell(
+                    IconButton(
+                      icon: const Icon(Icons.add_circle, color: Colors.blue),
+                      onPressed: () {
+                        showInfoModal(
+                            context, user); // Mostrar el modal de información
+                      },
+                    ),
+                  ),
+                  DataCell(Text(user.name.toString())),
+                  DataCell(Text(user.email.toString())),
+                  DataCell(Text(user.telefono.toString())),
+                  DataCell(Text(user.anexo.toString())),
+                  DataCell(
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.blue),
+                          onPressed: () {
+                            showEditModal(
+                                context, user); // Mostrar el modal de edición
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            // Lógica para eliminar el usuario
+                            userProvider.deleteUser(user.id!.toInt());
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ]);
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Función para mostrar el modal de información
+  void showInfoModal(BuildContext context, User user) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -49,6 +131,7 @@ class SearchTable extends StatefulWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Título del modal
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -60,21 +143,23 @@ class SearchTable extends StatefulWidget {
                     IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        Navigator.of(context).pop(); // Cierra el modal
                       },
                     ),
                   ],
                 ),
                 const Divider(),
-                Text("Dirección: ${rowData['address']}"),
+                // Contenido adicional
+                Text("Ultima Conexion: ${user.ultimaConexion}"),
                 const SizedBox(height: 8),
-                Text("Cargo: ${rowData['position']}"),
+                Text("Rol: ${user.rol}"),
                 const SizedBox(height: 16),
+                // Botón para cerrar
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      Navigator.of(context).pop(); // Cierra el modal
                     },
                     child: const Text("Cerrar"),
                   ),
@@ -87,13 +172,12 @@ class SearchTable extends StatefulWidget {
     );
   }
 
-
-
-  void showEditModal(BuildContext context, Map<String, String> rowData) {
-    final nameController = TextEditingController(text: rowData['name']);
-    final emailController = TextEditingController(text: rowData['email']);
-    final phoneController = TextEditingController(text: rowData['phone']);
-    final anexoController = TextEditingController(text: rowData['anexo']);
+  // Función para mostrar el modal de edición
+  void showEditModal(BuildContext context, User user) {
+    final nameController = TextEditingController(text: user.name);
+    final emailController = TextEditingController(text: user.email);
+    final phoneController = TextEditingController(text: user.telefono);
+    final anexoController = TextEditingController(text: user.anexo);
 
     showDialog(
       context: context,
@@ -108,6 +192,7 @@ class SearchTable extends StatefulWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Título del modal
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -119,12 +204,13 @@ class SearchTable extends StatefulWidget {
                     IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        Navigator.of(context).pop(); // Cierra el modal
                       },
                     ),
                   ],
                 ),
                 const Divider(),
+                // Formulario de edición
                 TextField(
                   controller: nameController,
                   decoration: const InputDecoration(labelText: 'Nombre'),
@@ -145,25 +231,35 @@ class SearchTable extends StatefulWidget {
                   decoration: const InputDecoration(labelText: 'Anexo'),
                 ),
                 const SizedBox(height: 16),
+                // Botones de acción
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                        setState(() {
-                          rowData['name'] = nameController.text;
-                          rowData['email'] = emailController.text;
-                          rowData['phone'] = phoneController.text;
-                          rowData['anexo'] = anexoController.text;
-                        });
-                        Navigator.of(context).pop();
+                        // Lógica para guardar cambios
+                        final updatedUser = User(
+                          id: user.id,
+                          name: nameController.text,
+                          email: emailController.text,
+                          telefono: phoneController.text,
+                          anexo: anexoController.text,
+                          rol: user.rol,
+                          ultimaConexion: user.ultimaConexion,
+                          estado: '',
+                          updatedAt: '',
+                          createdAt: '',
+                          admin: '',
+                        );
+                        context.read<UserProvider>().updateUser(1, updatedUser);
+                        Navigator.of(context).pop(); // Cierra el modal
                       },
                       child: const Text("Guardar"),
                     ),
                     const SizedBox(width: 8),
                     TextButton(
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        Navigator.of(context).pop(); // Cierra el modal
                       },
                       child: const Text("Cancelar"),
                     ),
@@ -174,127 +270,6 @@ class SearchTable extends StatefulWidget {
           ),
         );
       },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final totalPages = (tableData.length / rowsPerPage).ceil();
-
-    return Card(
-      elevation: 5,
-      margin: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              decoration: InputDecoration(
-                labelText: 'Buscar',
-                hintText: 'Ingrese un nombre, correo, teléfono o anexo',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-              ),
-              onChanged: (value) {},
-            ),
-          ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text("")), // Botón "+"
-                DataColumn(label: Text("Nombre")),
-                DataColumn(label: Text("Correo")),
-                DataColumn(label: Text("Teléfono")),
-                DataColumn(label: Text("Anexo")),
-                DataColumn(label: Text("Acciones")),
-              ],
-              rows: paginatedData.map((row) {
-                return DataRow(cells: [
-                  DataCell(
-                    IconButton(
-                      icon: const Icon(Icons.add_circle, color: Colors.blue),
-                      onPressed: () {
-                        showInfoModal(context, row);
-                      },
-                    ),
-                  ),
-                  DataCell(Text(row["name"]!)),
-                  DataCell(Text(row["email"]!)),
-                  DataCell(Text(row["phone"]!)),
-                  DataCell(Text(row["anexo"]!)),
-                  DataCell(
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () {
-                            showEditModal(context, row);
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            setState(() {
-                              tableData.remove(row);
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ]);
-              }).toList(),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: currentPage > 1
-                      ? () {
-                          setState(() {
-                            currentPage--;
-                          });
-                        }
-                      : null,
-                ),
-                for (int i = 1; i <= totalPages; i++)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            i == currentPage ? Colors.blue : Colors.grey,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          currentPage = i;
-                        });
-                      },
-                      child: Text("$i"),
-                    ),
-                  ),
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  onPressed: currentPage < totalPages
-                      ? () {
-                          setState(() {
-                            currentPage++;
-                          });
-                        }
-                      : null,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -64,9 +64,19 @@ class UserService {
   }
 
   // Obtener todos los usuarios con paginación
-  Future<Paginate> getAllUsers(String token, {int page = 1, String search =""}) async {
-    final url = Uri.parse('$baseUrl/users?search=$search?page=$page');
-    final response = await http.get(url, headers: {
+  Future<Paginate> getAllUsers(String token, {int? page, String? search}) async {
+    // Construir la URL manualmente según los parámetros
+    String url = '$baseUrl/users';
+
+    // Agregar parámetros solo si existen
+    if (search != null && search.isNotEmpty) {
+      url += '?search=$search';
+    }
+    if (page != null) {
+      url += search != null && search.isNotEmpty ? '&page=$page' : '?page=$page';
+    }
+
+    final response = await http.get(Uri.parse(url), headers: {
       'Authorization': 'Bearer $token',
     });
 
@@ -76,6 +86,7 @@ class UserService {
       throw Exception('Failed to load users: ${response.statusCode}');
     }
   }
+
 
 
   // Obtener usuarios en la papelera con paginación

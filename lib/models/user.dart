@@ -1,16 +1,16 @@
 class User {
-  final int id;
-  final String name;
-  final String email;
-  final String estado;
-  final String rol;
-  final String ultimaConexion;
-  final String telefono;
+  final int? id;
+  final String? name;
+  final String? email;
+  final String? estado;
+  final String? rol;
+  final String? ultimaConexion;
+  final String? telefono;
   final String? emailVerifiedAt;
-  final String createdAt;
-  final String updatedAt;
+  final String? createdAt;
+  final String? updatedAt;
   final String? deletedAt;
-  final String admin;
+  final String? admin;
   final String? anexo;
 
   User({
@@ -26,7 +26,7 @@ class User {
     required this.updatedAt,
     this.deletedAt,
     required this.admin,
-    this.anexo,
+    required this.anexo,
   });
 
   // Método para convertir JSON en un objeto User

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // Importa el paquete flutter_doten
+import 'package:projects/providers/user_provider.dart';
 import 'package:projects/services/auth_service.dart';
 import 'package:projects/view/login.dart';
 import 'package:projects/view/profile.dart';
 import 'package:provider/provider.dart';
-
-import 'controllers/user_controller.dart';
 
 void main() async {
   // Carga las variables de entorno desde el archivo .env
@@ -21,7 +20,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => UserController()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
       ],
       child: MaterialApp(
         title: 'Login Demo',

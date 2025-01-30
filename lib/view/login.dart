@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:projects/controllers/user_controller.dart';
+import '../providers/user_provider.dart';
 import 'profile.dart'; // Importar la vista de perfil
 import 'register.dart'; // Importar la vista de registro
 
@@ -27,8 +27,8 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     try {
-      final userController = UserController();
-      final response = await userController.login({
+      final userProvider = UserProvider();
+      final response = await userProvider.login({
         'email': email,
         'password': password,
       });

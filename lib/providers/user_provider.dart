@@ -5,7 +5,7 @@ import 'package:projects/services/auth_service.dart';
 import 'package:projects/services/user_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class UserController extends ChangeNotifier {
+class UserProvider extends ChangeNotifier {
   final UserService _userService = UserService();
   List<User> _users = [];
   Paginate? _pagination;
@@ -19,30 +19,30 @@ class UserController extends ChangeNotifier {
 
   // AUTHINICIO
   String? _token;
-  Map<String, dynamic>? _userData;
+  Map<String, dynamic>? _currentUser;
 
   String? get token => _token;
-  Map<String, dynamic>? get userData => _userData;
+  Map<String, dynamic>? get userData => _currentUser;
 
   // Inicializa el controlador y obtiene el token guardado
   Future<void> initialize() async {
     _token = await AuthService.getUserToken();
-    _userData = await AuthService.getUserData();
+    _currentUser = await AuthService.getUserData();
     notifyListeners();
   }
 
   // PATRON SINGLETON
-  static final UserController _instance = UserController._internal();
+  static final UserProvider _instance = UserProvider._internal();
 
-  factory UserController() {
+  factory UserProvider() {
     return _instance;
   }
 
-  UserController._internal();
+  UserProvider._internal();
 
 
-  // Obtener todos los usuarios
-  Future<void> getUsers({int page = 1, String search = ""}) async {
+// Obtener todos los usuarios
+  Future<void> getUsers({int? page, String? search}) async {
     try {
       _isLoading = true;
       notifyListeners();
@@ -50,8 +50,9 @@ class UserController extends ChangeNotifier {
       final token = await AuthService.getUserToken();
       if (token == null) throw Exception('No authentication token found');
 
+      // Llamar al servicio con parámetros opcionales
       _pagination = await _userService.getAllUsers(token, page: page, search: search);
-      _users = _pagination!.users;
+      _users= pagination!.users;
 
       _isLoading = false;
       notifyListeners();
@@ -93,8 +94,7 @@ class UserController extends ChangeNotifier {
       if (token == null) throw Exception('No authentication token found');
 
       User newUser = await _userService.createUser(token, userData);
-      _users.add(newUser);
-
+      _pagination?.users.add(newUser);
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -105,7 +105,7 @@ class UserController extends ChangeNotifier {
   }
 
   // Actualizar un usuario
-  Future<void> updateUser(int id, Map<String, User> userData) async {
+  Future<void> updateUser(int id, User userData) async {
     try {
       _isLoading = true;
       notifyListeners();
@@ -113,8 +113,8 @@ class UserController extends ChangeNotifier {
       final token = await AuthService.getUserToken();
       if (token == null) throw Exception('No authentication token found');
 
-      User updatedUser = await _userService.updateUser(token, id, userData);
-      int index = _users.indexWhere((user) => user.id == id);
+      User updatedUser = await _userService.updateUser(token, id, userData as Map<String, dynamic>);
+      int index = _pagination!.users.indexWhere((user) => user.id == id);
       if (index != -1) {
         _users[index] = updatedUser;
       }
@@ -138,7 +138,7 @@ class UserController extends ChangeNotifier {
       if (token == null) throw Exception('No authentication token found');
 
       await _userService.deleteUser(token, id);
-      _users.removeWhere((user) => user.id == id);
+      _pagination!.users.removeWhere((user) => user.id == id);
 
       _isLoading = false;
       notifyListeners();
@@ -158,8 +158,8 @@ class UserController extends ChangeNotifier {
       final token = await AuthService.getUserToken();
       if (token == null) throw Exception('No authentication token found');
 
-      User restoredUser = await _userService.restoreUser(token, id);
-      _users.add(restoredUser);
+      await _userService.restoreUser(token, id);
+      _users.add(_userService.getUserById(token, id) as User);
 
       _isLoading = false;
       notifyListeners();
@@ -180,7 +180,7 @@ class UserController extends ChangeNotifier {
       if (token == null) throw Exception('No authentication token found');
 
       Paginate trashPagination = await _userService.getTrashUsers(token, page: page, search:search);
-      _users = trashPagination.users;
+      _pagination = trashPagination;
 
       _isLoading = false;
       notifyListeners();
@@ -242,7 +242,7 @@ class UserController extends ChangeNotifier {
       if (token == null) throw Exception('No authentication token found');
 
       await _userService.forceDeleteUser(token, id);
-      _users.removeWhere((user) => user.id == id);
+      _pagination?.users.removeWhere((user) => user.id == id);
 
       _isLoading = false;
       notifyListeners();
@@ -259,11 +259,11 @@ class UserController extends ChangeNotifier {
     try {
       final response = await AuthService().login(credentials);
       _token = response['token'];
-      _userData = response['user'];
+      _currentUser = response['user'];
 
       // Guardar el token y los datos del usuario
       await AuthService.saveToken(_token!);
-      await AuthService.saveUserData(_token!, _userData!);
+      await AuthService.saveUserData(_token!, _currentUser!);
 
       notifyListeners();
       return response;  // Retorna la respuesta completa del servicio
@@ -278,7 +278,7 @@ class UserController extends ChangeNotifier {
       if (_token != null) {
         final response = await AuthService().logout(_token!);
         _token = null;
-        _userData = null;
+        _currentUser = null;
 
         // Limpiar el almacenamiento local
         final prefs = await SharedPreferences.getInstance();
@@ -299,11 +299,11 @@ class UserController extends ChangeNotifier {
     try {
       final response = await AuthService().register(userData);
       _token = response['token'];
-      _userData = response['user'];
+      _currentUser = response['user'];
 
       // Guardar el token y los datos del usuario
       await AuthService.saveToken(_token!);
-      await AuthService.saveUserData(_token!, _userData!);
+      await AuthService.saveUserData(_token!, _currentUser!);
 
       notifyListeners();
       return response;  // Retorna la respuesta completa del servicio

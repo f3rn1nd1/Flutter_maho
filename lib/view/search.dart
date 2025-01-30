@@ -1,182 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:projects/controllers/user_controller.dart';
+import 'package:provider/provider.dart';
+import 'package:projects/providers/user_provider.dart';
+import '../models/user.dart';
 
-class SearchTable extends StatelessWidget {
+class SearchTable extends StatefulWidget {
   const SearchTable({super.key});
 
   @override
+  SearchTableState createState() => SearchTableState();
+}
+
+class SearchTableState extends State<SearchTable> {
+  @override
+  void initState() {
+    super.initState();
+    // Obtener los usuarios cuando el widget se inicializa
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    userProvider.getUsers();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final userController = UserController();
-    // Datos de ejemplo
-    final tableData = [
-      {
-        "name": "Carlos Ramírez",
-        "email": "carlos@example.com",
-        "phone": "987654321",
-        "anexo": "Ext. 101",
-        "address": "Av. Siempre Viva 123, Ciudad",
-        "position": "Gerente General",
-      },
-      {
-        "name": "María Gómez",
-        "email": "maria@example.com",
-        "phone": "876543210",
-        "anexo": "Ext. 102",
-        "address": "Calle Principal 456, Ciudad",
-        "position": "Jefa de Ventas",
-      },
-      {
-        "name": "Luis Pérez",
-        "email": "luis@example.com",
-        "phone": "765432109",
-        "anexo": "Ext. 103",
-        "address": "Barrio Central 789, Ciudad",
-        "position": "Coordinador de Proyectos",
-      },
-    ];
-
-    // Función para mostrar el modal del botón "+"
-    void showInfoModal(BuildContext context, Map<String, String> rowData) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return Dialog(
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              width: MediaQuery.of(context).size.width * 0.4,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Título del modal
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Información adicional",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () {
-                          Navigator.of(context).pop(); // Cierra el modal
-                        },
-                      ),
-                    ],
-                  ),
-                  const Divider(),
-                  // Contenido adicional
-                  Text("Dirección: ${rowData['address']}"),
-                  const SizedBox(height: 8),
-                  Text("Cargo: ${rowData['position']}"),
-                  const SizedBox(height: 16),
-                  // Botón para cerrar
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(); // Cierra el modal
-                      },
-                      child: const Text("Cerrar"),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    }
-
-    // Función para mostrar el modal del botón de edición
-    void showEditModal(BuildContext context, Map<String, String> rowData) {
-      final nameController = TextEditingController(text: rowData['name']);
-      final emailController = TextEditingController(text: rowData['email']);
-      final phoneController = TextEditingController(text: rowData['phone']);
-      final anexoController = TextEditingController(text: rowData['anexo']);
-
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return Dialog(
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              width: MediaQuery.of(context).size.width * 0.4,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Título del modal
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Editar información",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () {
-                          Navigator.of(context).pop(); // Cierra el modal
-                        },
-                      ),
-                    ],
-                  ),
-                  const Divider(),
-                  // Formulario de edición
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(labelText: 'Nombre'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: emailController,
-                    decoration: const InputDecoration(labelText: 'Correo'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: phoneController,
-                    decoration: const InputDecoration(labelText: 'Teléfono'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: anexoController,
-                    decoration: const InputDecoration(labelText: 'Anexo'),
-                  ),
-                  const SizedBox(height: 16),
-                  // Botones de acción
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          // Aquí puedes manejar la lógica de guardar cambios
-                          Navigator.of(context).pop(); // Cierra el modal
-                        },
-                        child: const Text("Guardar"),
-                      ),
-                      const SizedBox(width: 8),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop(); // Cierra el modal
-                        },
-                        child: const Text("Cancelar"),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    }
+    final userProvider = Provider.of<UserProvider>(context);
 
     return Card(
       elevation: 5,
@@ -195,11 +40,27 @@ class SearchTable extends StatelessWidget {
                 ),
               ),
               onChanged: (value) {
-                // Aquí puedes agregar la lógica para filtrar la tabla
+                // Filtrar usuarios según el valor de búsqueda
+                userProvider.getUsers(search: value);
               },
             ),
           ),
-          // Tabla
+          // Mostrar un indicador de carga si los datos están cargando
+          if (userProvider.isLoading)
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: CircularProgressIndicator(),
+            ),
+          // Mostrar un mensaje de error si ocurre un problema
+          if (userProvider.errorMessage.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                userProvider.errorMessage,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
+          // Tabla de usuarios
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
@@ -211,35 +72,37 @@ class SearchTable extends StatelessWidget {
                 DataColumn(label: Text("Anexo")),
                 DataColumn(label: Text("Acciones")),
               ],
-              rows: tableData.map((row) {
-                return DataRow(cells: [
+
+              rows: userProvider.users.map((user)
+              {
+                return
+                  DataRow(cells: [
                   DataCell(
                     IconButton(
                       icon: const Icon(Icons.add_circle, color: Colors.blue),
                       onPressed: () {
-                        showInfoModal(
-                            context, row); // Mostrar el modal de información
+                        showInfoModal(context, user); // Mostrar el modal de información
                       },
                     ),
                   ),
-                  DataCell(Text(row["name"]!)),
-                  DataCell(Text(row["email"]!)),
-                  DataCell(Text(row["phone"]!)),
-                  DataCell(Text(row["anexo"]!)),
+                  DataCell(Text(user.name.toString())),
+                  DataCell(Text(user.email.toString())),
+                  DataCell(Text(user.telefono.toString())),
+                  DataCell(Text(user.anexo.toString())),
                   DataCell(
                     Row(
                       children: [
                         IconButton(
                           icon: const Icon(Icons.edit, color: Colors.blue),
                           onPressed: () {
-                            showEditModal(
-                                context, row); // Mostrar el modal de edición
+                            showEditModal(context, user); // Mostrar el modal de edición
                           },
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
                           onPressed: () {
-                            // Lógica para eliminar el elemento
+                            // Lógica para eliminar el usuario
+                            userProvider.deleteUser(user.id!.toInt());
                           },
                         ),
                       ],
@@ -251,6 +114,155 @@ class SearchTable extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  // Función para mostrar el modal de información
+  void showInfoModal(BuildContext context, User user) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            width: MediaQuery.of(context).size.width * 0.4,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Título del modal
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Información adicional",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Cierra el modal
+                      },
+                    ),
+                  ],
+                ),
+                const Divider(),
+                // Contenido adicional
+                Text("Ultima Conexion: ${user.ultimaConexion}"),
+                const SizedBox(height: 8),
+                Text("Rol: ${user.rol}"),
+                const SizedBox(height: 16),
+                // Botón para cerrar
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Cierra el modal
+                    },
+                    child: const Text("Cerrar"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Función para mostrar el modal de edición
+  void showEditModal(BuildContext context, User user) {
+    final nameController = TextEditingController(text: user.name);
+    final emailController = TextEditingController(text: user.email);
+    final phoneController = TextEditingController(text: user.telefono);
+    final anexoController = TextEditingController(text: user.anexo);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            width: MediaQuery.of(context).size.width * 0.4,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Título del modal
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Editar información",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Cierra el modal
+                      },
+                    ),
+                  ],
+                ),
+                const Divider(),
+                // Formulario de edición
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Nombre'),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(labelText: 'Correo'),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: phoneController,
+                  decoration: const InputDecoration(labelText: 'Teléfono'),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: anexoController,
+                  decoration: const InputDecoration(labelText: 'Anexo'),
+                ),
+                const SizedBox(height: 16),
+                // Botones de acción
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        // Lógica para guardar cambios
+                        final updatedUser = User(
+                          id: user.id,
+                          name: nameController.text,
+                          email: emailController.text,
+                          telefono: phoneController.text,
+                          anexo: anexoController.text,
+                          rol: user.rol,
+                          ultimaConexion: user.ultimaConexion, estado: '', updatedAt: '', createdAt: '', admin: '',
+                        );
+                        context.read<UserProvider>().updateUser(1, updatedUser);
+                        Navigator.of(context).pop(); // Cierra el modal
+                      },
+                      child: const Text("Guardar"),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Cierra el modal
+                      },
+                      child: const Text("Cancelar"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

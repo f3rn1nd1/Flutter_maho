@@ -12,7 +12,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  Map<String, dynamic>? _userData;
+  Map<String, dynamic>? _currentUser;
 
   @override
   void initState() {
@@ -23,7 +23,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _loadUserData() async {
     final userData = widget.userData ?? await AuthService.getUserData();
     setState(() {
-      _userData = userData;
+      _currentUser = userData;
     });
   }
 
@@ -37,11 +37,11 @@ class _ProfilePageState extends State<ProfilePage> {
         centerTitle: true,
         title: const Text("Sistema de agenda MAHO"),
       ),
-      body: _userData == null
+      body: _currentUser == null
           ? const Center(child: CircularProgressIndicator())
           : screenWidth < mobileBreakpoint
-          ? _buildMobileLayout(_userData!)
-          : _buildDesktopLayout(_userData!),
+          ? _buildMobileLayout(_currentUser!)
+          : _buildDesktopLayout(_currentUser!),
     );
   }
 
@@ -90,7 +90,10 @@ class _ProfilePageState extends State<ProfilePage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             CircleAvatar(
-              backgroundImage: NetworkImage(userData['image_url'] ?? 'https://via.placeholder.com/150'),
+              backgroundImage: userData['image_url'] != null &&
+                  userData['image_url'].isNotEmpty
+                  ? NetworkImage(userData['image_url'])
+                  : const AssetImage('/maho.png') as ImageProvider,
               radius: 50,
             ),
             const SizedBox(height: 16),

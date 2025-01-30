@@ -67,8 +67,4 @@ class User {
       'anexo': anexo,
     };
   }
-
-  //UserRole get role {
-  //  return admin == 0 ? UserRole.admin : UserRole.user;
-  //}
 }

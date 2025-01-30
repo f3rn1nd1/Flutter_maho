@@ -1,39 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:projects/controllers/user_controller.dart';
 
 class SearchTable extends StatefulWidget {
   const SearchTable({super.key});
 
   @override
-  _SearchTableState createState() => _SearchTableState();
-}
-
-class _SearchTableState extends State<SearchTable> {
-  final List<Map<String, String>> tableData = [
-    {
-      "name": "Carlos Ramírez",
-      "email": "carlos@example.com",
-      "phone": "987654321",
-      "anexo": "Ext. 101",
-      "address": "Av. Siempre Viva 123, Ciudad",
-      "position": "Gerente General",
-    },
-    {
-      "name": "María Gómez",
-      "email": "maria@example.com",
-      "phone": "876543210",
-      "anexo": "Ext. 102",
-      "address": "Calle Principal 456, Ciudad",
-      "position": "Jefa de Ventas",
-    },
-    {
-      "name": "Luis Pérez",
-      "email": "luis@example.com",
-      "phone": "765432109",
-      "anexo": "Ext. 103",
-      "address": "Barrio Central 789, Ciudad",
-      "position": "Coordinador de Proyectos",
-    },
-  ];
+  Widget build(BuildContext context) {
+    final userController = UserController();
+    // Datos de ejemplo
+    final tableData = [
+      {
+        "name": "Carlos Ramírez",
+        "email": "carlos@example.com",
+        "phone": "987654321",
+        "anexo": "Ext. 101",
+        "address": "Av. Siempre Viva 123, Ciudad",
+        "position": "Gerente General",
+      },
+      {
+        "name": "María Gómez",
+        "email": "maria@example.com",
+        "phone": "876543210",
+        "anexo": "Ext. 102",
+        "address": "Calle Principal 456, Ciudad",
+        "position": "Jefa de Ventas",
+      },
+      {
+        "name": "Luis Pérez",
+        "email": "luis@example.com",
+        "phone": "765432109",
+        "anexo": "Ext. 103",
+        "address": "Barrio Central 789, Ciudad",
+        "position": "Coordinador de Proyectos",
+      },
+    ];
 
   void showInfoModal(BuildContext context, Map<String, String> rowData) {
     showDialog(
@@ -87,17 +87,7 @@ class _SearchTableState extends State<SearchTable> {
     );
   }
 
-  int currentPage = 1;
-  final int rowsPerPage = 2;
 
-  List<Map<String, String>> get paginatedData {
-    final startIndex = (currentPage - 1) * rowsPerPage;
-    final endIndex = startIndex + rowsPerPage;
-    return tableData.sublist(
-      startIndex,
-      endIndex > tableData.length ? tableData.length : endIndex,
-    );
-  }
 
   void showEditModal(BuildContext context, Map<String, String> rowData) {
     final nameController = TextEditingController(text: rowData['name']);

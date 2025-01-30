@@ -6,50 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthService {
   final String baseUrl = dotenv.get('BASE_URL');
 
-  // Método genérico para hacer solicitudes HTTP
-  Future<dynamic> _makeRequest(
-      String method,
-      String endpoint, {
-        Map<String, String>? headers,
-        Map<String, dynamic>? body,
-      }) async {
-    final url = Uri.parse('$baseUrl$endpoint');
-    http.Response response;
-
-    switch (method.toUpperCase()) {
-      case 'GET':
-        response = await http.get(url, headers: headers);
-        break;
-      case 'POST':
-        response = await http.post(
-          url,
-          headers: headers,
-          body: body != null ? jsonEncode(body) : null,
-        );
-        break;
-      case 'PUT':
-        response = await http.put(
-          url,
-          headers: headers,
-          body: body != null ? jsonEncode(body) : null,
-        );
-        break;
-      case 'DELETE':
-        response = await http.delete(url, headers: headers);
-        break;
-      default:
-        throw Exception('Método HTTP no soportado: $method');
-    }
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to load data: ${response.statusCode}');
-    }
-  }
-
   // ===========================
-  // Segmento: Tokenizacion
+  // Segmento: Tokenización
   // ===========================
 
   static Future<void> saveToken(String token) async {
@@ -74,38 +32,59 @@ class AuthService {
     return userJson != null ? jsonDecode(userJson) : null;
   }
 
-
   // ===========================
   // Segmento: Autenticación
   // ===========================
 
   // Iniciar sesión
   Future<Map<String, dynamic>> login(Map<String, dynamic> credentials) async {
-    final response = await _makeRequest(
-      'POST',
-      '/login',
+    final url = Uri.parse('$baseUrl/login');
+    final response = await http.post(
+      url,
       headers: {'Content-Type': 'application/json'},
-      body: credentials,
+      body: jsonEncode(credentials),
     );
 
-    if (response['success'] != true) {
-      throw Exception(response['message'] ?? 'Error desconocido');
+    if (response.statusCode == 200) {
+      final responseBody = jsonDecode(response.body);
+      if (responseBody['success'] != true) {
+        throw Exception(responseBody['message'] ?? 'Error desconocido');
+      }
+      return responseBody;
+    } else {
+      throw Exception('Error al iniciar sesión: ${response.statusCode}');
     }
-
-    return response;
   }
 
   // Cerrar sesión
-  Future<dynamic> logout(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    return await _makeRequest('POST', '/logout', headers: {
-      'Authorization': 'Bearer $token',
-    });
+  Future<void> logout(String token) async {
+    final url = Uri.parse('$baseUrl/logout');
+    final response = await http.post(
+      url,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('auth_token');
+    } else {
+      throw Exception('Error al cerrar sesión: ${response.statusCode}');
+    }
   }
 
   // Registrar un nuevo usuario
-  Future<dynamic> register(Map<String, dynamic> userData) async {
-    return await _makeRequest('POST', '/register', body: userData);
+  Future<Map<String, dynamic>> register(Map<String, dynamic> userData) async {
+    final url = Uri.parse('$baseUrl/register');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(userData),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error al registrar usuario: ${response.statusCode}');
+    }
   }
 }

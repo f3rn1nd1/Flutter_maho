@@ -33,7 +33,7 @@ class SearchTableState extends State<SearchTable> {
             child: TextField(
               decoration: InputDecoration(
                 labelText: 'Buscar',
-                hintText: 'Ingrese un nombre, correo, teléfono o anexo',
+                hintText: 'Ingrese un nombre',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),

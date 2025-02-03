@@ -40,6 +40,10 @@ class UserProvider extends ChangeNotifier {
 
   UserProvider._internal();
 
+  // ===========================
+  // Segmento: Administrador
+  // ===========================
+
 // Obtener todos los usuarios
   Future<void> getUsers({int? page, String? search}) async {
     try {
@@ -114,12 +118,11 @@ class UserProvider extends ChangeNotifier {
       if (token == null) throw Exception('No authentication token found');
 
       User updatedUser = await _userService.updateUser(
-          token, id, userData as Map<String, dynamic>);
+          token, id, userData.toJson() as Map<String, dynamic>);
       int index = _pagination!.users.indexWhere((user) => user.id == id);
       if (index != -1) {
         _users[index] = updatedUser;
       }
-
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -254,6 +257,58 @@ class UserProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // ===========================
+  // Segmento: Usuario Comun
+  // ===========================
+
+  // Obtener todos los usuarios
+  Future<void> infoUsers({int? page, String? search}) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final token = await AuthService.getUserToken();
+      if (token == null) throw Exception('No authentication token found');
+
+      // Llamar al servicio con parámetros opcionales
+      _pagination =
+      await _userService.getInfoAllUsers(token, page: page, search: search);
+      _users = pagination!.users;
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Obtener un usuario por su ID
+  Future<void> getCurrentUser(int id) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final token = await AuthService.getUserToken();
+      if (token == null) throw Exception('No authentication token found');
+
+      User user = await _userService.getCurrentUserInfo(token, id);
+      _users = [user];
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ===========================
+  // Segmento: Autenticación
+  // ===========================
 
   // Iniciar sesión
   Future<dynamic> login(Map<String, dynamic> credentials) async {

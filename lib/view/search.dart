@@ -83,10 +83,10 @@ class SearchTableState extends State<SearchTable> {
                       },
                     ),
                   ),
-                  DataCell(Text(user.name.toString())),
-                  DataCell(Text(user.email.toString())),
-                  DataCell(Text(user.telefono.toString())),
-                  DataCell(Text(user.anexo.toString())),
+                  DataCell(SelectableText(user.name.toString())),
+                  DataCell(SelectableText(user.email.toString())),
+                  DataCell(SelectableText(user.telefono.toString())),
+                  DataCell(SelectableText(user.anexo.toString())),
                   DataCell(
                     Row(
                       children: [

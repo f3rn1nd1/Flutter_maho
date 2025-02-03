@@ -51,20 +51,23 @@ class User {
 
   // Método para convertir un objeto User en JSON
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'email': email,
-      'estado': estado,
-      'rol': rol,
-      'ultima_conexion': ultimaConexion,
-      'telefono': telefono,
-      'email_verified_at': emailVerifiedAt,
-      'created_at': createdAt,
-      'updated_at': updatedAt,
-      'deleted_at': deletedAt,
-      'admin': admin,
-      'anexo': anexo,
-    };
+    final Map<String, dynamic> data = {};
+
+    // Añadir solo los atributos que no son null o "null"
+    if (id != null) data['id'] = id;
+    if (name != null) data['name'] = name;
+    if (email != null) data['email'] = email;
+    if (estado != null) data['estado'] = estado;
+    if (rol != null) data['rol'] = rol;
+    if (ultimaConexion != null) data['ultima_conexion'] = ultimaConexion;
+    if (telefono != null) data['telefono'] = telefono;
+    if (emailVerifiedAt != null) data['email_verified_at'] = emailVerifiedAt;
+    if (createdAt != null) data['created_at'] = createdAt;
+    if (updatedAt != null) data['updated_at'] = updatedAt;
+    if (deletedAt != null) data['deleted_at'] = deletedAt;
+    if (admin != null && admin != "null") data['admin'] = admin; // Excluir si es "null"
+    if (anexo != null) data['anexo'] = anexo;
+
+    return data;
   }
 }

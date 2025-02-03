@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:projects/providers/user_provider.dart'; // Importa el provider
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -11,6 +13,8 @@ class _RegisterPageState extends State<RegisterPage> {
   // Controladores para los campos de texto
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _telefonoController = TextEditingController();
+  final _anexoController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
@@ -19,6 +23,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context); // Accede al provider
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Registro'),
@@ -62,11 +68,33 @@ class _RegisterPageState extends State<RegisterPage> {
                   // Campo de correo electrónico
                   TextField(
                     controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       labelText: 'Correo Electrónico',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.email),
+                      contentPadding:
+                      EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                    ),
+                  ),
+                  // Campo de telefono
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _telefonoController,
+                    decoration: const InputDecoration(
+                      labelText: 'Telefono',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.phone_iphone),
+                      contentPadding:
+                      EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _anexoController,
+                    decoration: const InputDecoration(
+                      labelText: 'Anexo',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.phone),
                       contentPadding:
                       EdgeInsets.symmetric(vertical: 12, horizontal: 10),
                     ),
@@ -124,7 +152,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 20),
                   // Botón de registro
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       // Validar los campos
                       if (_nameController.text.isEmpty ||
                           _emailController.text.isEmpty ||
@@ -144,17 +172,40 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         );
                       } else {
-                        // Aquí puedes agregar la lógica para registrar al usuario
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Registro exitoso'),
-                          ),
-                        );
-                        // Navegar a otra vista después del registro (opcional)
-                        // Navigator.pushReplacement(
-                        //   context,
-                        //   MaterialPageRoute(builder: (context) => const LoginPage()),
-                        // );
+                        // Crear un mapa con los datos del usuario
+                        Map<String, dynamic> userData = {
+                          'name': _nameController.text,
+                          'email': _emailController.text,
+                          'telefono': _telefonoController.text,
+                          'anexo': _anexoController.text,
+                          'password': _passwordController.text,
+                          'password_confirmation': _passwordController.text,
+                        };
+
+                        try {
+                          // Llamar al método register del provider
+                          final response =await userProvider.register(userData);
+
+                          // Mostrar mensaje de éxito
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Registro exitoso'),
+                            ),
+                          );
+
+                          // Navegar a otra vista después del registro (opcional)
+                          // Navigator.pushReplacement(
+                          //   context,
+                          //   MaterialPageRoute(builder: (context) => const LoginPage()),
+                          // );
+                        } catch (e) {
+                          // Mostrar mensaje de error
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error: $e'),
+                            ),
+                          );
+                        }
                       }
                     },
                     style: ElevatedButton.styleFrom(

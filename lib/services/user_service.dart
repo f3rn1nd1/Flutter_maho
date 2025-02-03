@@ -190,16 +190,26 @@ class UserService {
   }
 
   // Obtener información de todos los usuarios (con búsqueda y paginación)
-  Future<Paginate> getInfoAllUsers(String token, {String search = '', int page = 1}) async {
-    final url = Uri.parse('$baseUrl/infoall?search=$search&page=$page');
-    final response = await http.get(url, headers: {
+  Future<Paginate> getInfoAllUsers(String token, {int? page, String? search}) async {
+    // Construir la URL manualmente según los parámetros
+    String url = '$baseUrl/infoall';
+
+    // Agregar parámetros solo si existen
+    if (search != null && search.isNotEmpty) {
+      url += '?search=$search';
+    }
+    if (page != null) {
+      url += search != null && search.isNotEmpty ? '&page=$page' : '?page=$page';
+    }
+
+    final response = await http.get(Uri.parse(url), headers: {
       'Authorization': 'Bearer $token',
     });
 
     if (response.statusCode == 200) {
       return Paginate.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Failed to load all users: ${response.statusCode}');
+      throw Exception('Failed to load users: ${response.statusCode}');
     }
   }
 

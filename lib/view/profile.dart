@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-
+import 'package:projects/providers/user_provider.dart';
+import '../models/user.dart';
 import '../services/auth_service.dart';
 import 'search.dart'; // Importar la tabla de búsqueda
 import 'login.dart';
 
 class ProfilePage extends StatefulWidget {
   final Map<String, dynamic>? userData;
-
   const ProfilePage({super.key, this.userData});
 
   @override
@@ -77,15 +77,15 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Función para cerrar sesión y redirigir a login.dart
-  void _logout(BuildContext context) async {
+  void _logout(BuildContext context) {
+    final UserProvider userProvider = UserProvider();
+    userProvider.logout();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const LoginPage()),
     );
   }
 
-  // Diseño para móviles (una columna vertical)
   Widget _buildMobileLayout(Map<String, dynamic> userData) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -99,18 +99,15 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Diseño para escritorio/tablet (dos columnas horizontales)
   Widget _buildDesktopLayout(Map<String, dynamic> userData) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Columna izquierda: Perfil del estudiante
         Expanded(
           flex: 4,
           child: _buildProfileCard(userData),
         ),
         const SizedBox(width: 16),
-        // Columna derecha: Tabla de datos (usando SearchTable)
         Expanded(
           flex: 8,
           child: const SearchTable(),
@@ -119,7 +116,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Tarjeta de perfil reutilizable
   Widget _buildProfileCard(Map<String, dynamic> userData) {
     return Card(
       elevation: 5,
@@ -171,7 +167,7 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                _showEditProfileModal(context); // Mostrar el modal de edición
+                _showEditProfileDialog(context, userData);
               },
               child: const Text('Editar Perfil'),
             ),
@@ -181,18 +177,21 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Función para mostrar el modal de edición de perfil
+  void _showEditProfileDialog(
+      BuildContext context, Map<String, dynamic> userData) {
+    final _formKey = GlobalKey<FormState>();
+    final _nameController = TextEditingController(text: userData['name']);
+    final _emailController = TextEditingController(text: userData['email']);
+    final _phoneController = TextEditingController(text: userData['telefono']);
 
-  // Función para mostrar el modal de edición de perfil en el centro
-  void _showEditProfileModal(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Editar Perfil'),
-          content: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
+          content: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -201,7 +200,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     decoration: const InputDecoration(labelText: 'Nombre'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Por favor, ingresa tu nombre';
+                        return 'Por favor ingrese su nombre';
                       }
                       return null;
                     },
@@ -211,7 +210,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     decoration: const InputDecoration(labelText: 'Email'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Por favor, ingresa tu email';
+                        return 'Por favor ingrese su email';
                       }
                       return null;
                     },
@@ -221,7 +220,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     decoration: const InputDecoration(labelText: 'Teléfono'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Por favor, ingresa tu teléfono';
+                        return 'Por favor ingrese su teléfono';
                       }
                       return null;
                     },
@@ -233,25 +232,25 @@ class _ProfilePageState extends State<ProfilePage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Cerrar el modal sin guardar
+                Navigator.of(context).pop();
               },
               child: const Text('Cancelar'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                  // Guardar los cambios
-                  setState(() {
-                    _currentUser?['name'] = _nameController.text;
-                    _currentUser?['email'] = _emailController.text;
-                    _currentUser?['telefono'] = _phoneController.text;
-                  });
-                  Navigator.pop(context); // Cerrar el modal
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Perfil actualizado correctamente'),
-                    ),
-                  );
+                  final updatedUser = {
+                    'name': _nameController.text,
+                    'email': _emailController.text,
+                    'telefono': _phoneController.text,
+                  };
+
+                  final userProvider = UserProvider();
+                  await userProvider.updateUser(
+                      userData['id'], User.fromJson(updatedUser));
+                  _loadUserData();
+
+                  Navigator.of(context).pop();
                 }
               },
               child: const Text('Guardar'),

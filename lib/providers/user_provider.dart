@@ -67,7 +67,7 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  // Obtener un usuario por su ID
+  // Obtener un usuario por su ID vista Admin
   Future<void> getUserById(int id) async {
     try {
       _isLoading = true;
@@ -273,7 +273,7 @@ class UserProvider extends ChangeNotifier {
 
       // Llamar al servicio con parámetros opcionales
       _pagination =
-      await _userService.getInfoAllUsers(token, page: page, search: search);
+          await _userService.getInfoAllUsers(token, page: page, search: search);
       _users = pagination!.users;
 
       _isLoading = false;

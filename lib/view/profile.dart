@@ -15,38 +15,17 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   Map<String, dynamic>? _currentUser;
-  final _formKey = GlobalKey<FormState>(); // Clave para el formulario del modal
-  late TextEditingController _nameController;
-  late TextEditingController _emailController;
-  late TextEditingController _phoneController;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
-    // Inicializar los controladores con valores vacíos
-    _nameController = TextEditingController();
-    _emailController = TextEditingController();
-    _phoneController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    // Limpiar los controladores cuando el widget se destruya
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadUserData() async {
     final userData = widget.userData ?? await AuthService.getUserData();
     setState(() {
       _currentUser = userData;
-      // Actualizar los controladores con los datos del usuario
-      _nameController.text = userData?['name'] ?? '';
-      _emailController.text = userData?['email'] ?? '';
-      _phoneController.text = userData?['telefono'] ?? '';
     });
   }
 

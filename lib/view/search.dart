@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projects/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:projects/providers/user_provider.dart';
 import '../models/user.dart';
@@ -14,105 +15,131 @@ class SearchTableState extends State<SearchTable> {
   @override
   void initState() {
     super.initState();
+
     // Obtener los usuarios cuando el widget se inicializa
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    userProvider.getUsers();
   }
 
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
 
-    return Card(
-      elevation: 5,
-      margin: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              decoration: InputDecoration(
-                labelText: 'Buscar',
-                hintText: 'Ingrese un nombre',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+    return FutureBuilder<Map<String, dynamic>>(
+      future: AuthService.getUserData()
+          .then((value) => value ?? {}), // Si es null, devuelve un mapa vacío
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return const Center(child: Text("Error al cargar datos"));
+        }
+
+        Map<String, dynamic> userData =
+            snapshot.data ?? {}; // Manejar null con un mapa vacío
+        bool isAdmin = userData['admin'] == "1";
+
+        return Card(
+          elevation: 5,
+          margin: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  decoration: InputDecoration(
+                    labelText: 'Buscar',
+                    hintText: 'Ingrese un nombre',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    // Usar operador ternario para decidir qué método llamar
+                    if (isAdmin) {
+                      userProvider.getUsers(search: value);
+                    } else {
+                      userProvider.infoUsers(search: value);
+                    }
+                  },
                 ),
               ),
-              onChanged: (value) {
-                // Filtrar usuarios según el valor de búsqueda
-                userProvider.getUsers(search: value);
-              },
-            ),
-          ),
-          // Mostrar un indicador de carga si los datos están cargando
-          if (userProvider.isLoading)
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: CircularProgressIndicator(),
-            ),
-          // Mostrar un mensaje de error si ocurre un problema
-          if (userProvider.errorMessage.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                userProvider.errorMessage,
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
-          // Tabla de usuarios
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text("")), // Columna para el botón "+"
-                DataColumn(label: Text("Nombre")),
-                DataColumn(label: Text("Correo")),
-                DataColumn(label: Text("Teléfono")),
-                DataColumn(label: Text("Anexo")),
-                DataColumn(label: Text("Acciones")),
-              ],
-              rows: userProvider.users.map((user) {
-                return DataRow(cells: [
-                  DataCell(
-                    IconButton(
-                      icon: const Icon(Icons.add_circle, color: Colors.blue),
-                      onPressed: () {
-                        showInfoModal(
-                            context, user); // Mostrar el modal de información
-                      },
-                    ),
+              if (userProvider.isLoading)
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: CircularProgressIndicator(),
+                )
+              else if (userProvider.errorMessage.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    userProvider.errorMessage,
+                    style: const TextStyle(
+                        color: Colors.red, fontWeight: FontWeight.bold),
                   ),
-                  DataCell(SelectableText(user.name.toString())),
-                  DataCell(SelectableText(user.email.toString())),
-                  DataCell(SelectableText(user.telefono.toString())),
-                  DataCell(SelectableText(user.anexo.toString())),
-                  DataCell(
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () {
-                            showEditModal(
-                                context, user); // Mostrar el modal de edición
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            // Lógica para eliminar el usuario
-                            userProvider.deleteUser(user.id!.toInt());
-                          },
-                        ),
-                      ],
-                    ),
+                )
+              else if (userProvider.users.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    'No hay usuarios disponibles.',
+                    style: TextStyle(color: Colors.grey),
                   ),
-                ]);
-              }).toList(),
-            ),
+                )
+              else
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columns: const [
+                      DataColumn(label: Text("")), // Botón "+"
+                      DataColumn(label: Text("Nombre")),
+                      DataColumn(label: Text("Correo")),
+                      DataColumn(label: Text("Teléfono")),
+                      DataColumn(label: Text("Anexo")),
+                      DataColumn(label: Text("Acciones")),
+                    ],
+                    rows: userProvider.users.map((user) {
+                      return DataRow(cells: [
+                        DataCell(
+                          IconButton(
+                            icon: const Icon(Icons.add_circle,
+                                color: Colors.blue),
+                            onPressed: () => showInfoModal(context, user),
+                          ),
+                        ),
+                        DataCell(SelectableText(user.name.toString())),
+                        DataCell(SelectableText(user.email.toString())),
+                        DataCell(SelectableText(user.telefono.toString())),
+                        DataCell(SelectableText(user.anexo.toString())),
+                        DataCell(
+                          Row(
+                            children: [
+                              if (isAdmin)
+                                IconButton(
+                                  icon: const Icon(Icons.edit,
+                                      color: Colors.blue),
+                                  onPressed: () => showEditModal(context, user),
+                                ),
+                              if (isAdmin)
+                                IconButton(
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
+                                  onPressed: () =>
+                                      userProvider.deleteUser(user.id!.toInt()),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ]);
+                    }).toList(),
+                  ),
+                ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

@@ -20,10 +20,12 @@ class AuthService {
     return prefs.getString('auth_token');
   }
 
-  static Future<void> saveUserData(String token, Map<String, dynamic> user) async {
+  static Future<void> saveUserData(
+      String token, Map<String, dynamic> user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_token', token);
-    await prefs.setString('user_data', jsonEncode(user)); // Guardar datos del usuario
+    await prefs.setString(
+        'user_data', jsonEncode(user)); // Guardar datos del usuario
   }
 
   static Future<Map<String, dynamic>?> getUserData() async {

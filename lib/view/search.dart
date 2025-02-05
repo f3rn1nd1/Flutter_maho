@@ -12,12 +12,55 @@ class SearchTable extends StatefulWidget {
 }
 
 class SearchTableState extends State<SearchTable> {
+  final TextEditingController _searchController =
+      TextEditingController(); // Controlador para el campo de búsqueda
+  List<User> _filteredUsers = []; // Lista de usuarios filtrados
+
   @override
   void initState() {
     super.initState();
 
-    // Obtener los usuarios cuando el widget se inicializa
+    // Obtener el proveedor de usuarios
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    // Verificar si el usuario es admin o no
+    final isAdmin = userProvider.currentUser?.admin ==
+        1; // Asume que `currentUser` tiene un campo `admin`
+
+    // Llamar al método correspondiente según el tipo de usuario
+    if (isAdmin) {
+      userProvider.getUsers().then((_) {
+        // Inicializar la lista filtrada con todos los usuarios
+        _filteredUsers = userProvider.users;
+      });
+    } else {
+      userProvider.infoUsers().then((_) {
+        // Inicializar la lista filtrada con todos los usuarios
+        _filteredUsers = userProvider.users;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose(); // Limpiar el controlador
+    super.dispose();
+  }
+
+  // Función para filtrar usuarios
+  void _filterUsers(String query, List<User> allUsers) {
+    setState(() {
+      if (query.isEmpty) {
+        // Si la consulta está vacía, mostrar todos los usuarios
+        _filteredUsers = allUsers;
+      } else {
+        // Filtrar usuarios que coincidan con la consulta
+        _filteredUsers = allUsers
+            .where((user) =>
+                user.name!.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      }
+    });
   }
 
   @override
@@ -25,8 +68,7 @@ class SearchTableState extends State<SearchTable> {
     final userProvider = Provider.of<UserProvider>(context);
 
     return FutureBuilder<Map<String, dynamic>>(
-      future: AuthService.getUserData()
-          .then((value) => value ?? {}), // Si es null, devuelve un mapa vacío
+      future: AuthService.getUserData().then((value) => value ?? {}),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -36,9 +78,8 @@ class SearchTableState extends State<SearchTable> {
           return const Center(child: Text("Error al cargar datos"));
         }
 
-        Map<String, dynamic> userData =
-            snapshot.data ?? {}; // Manejar null con un mapa vacío
-        bool isAdmin = userData['admin'] == "1";
+        Map<String, dynamic> userData = snapshot.data ?? {};
+        bool isAdmin = userData['admin']?.toString() == "1";
 
         return Card(
           elevation: 5,
@@ -48,6 +89,7 @@ class SearchTableState extends State<SearchTable> {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: TextField(
+                  controller: _searchController, // Asignar el controlador
                   decoration: InputDecoration(
                     labelText: 'Buscar',
                     hintText: 'Ingrese un nombre',
@@ -57,12 +99,8 @@ class SearchTableState extends State<SearchTable> {
                     ),
                   ),
                   onChanged: (value) {
-                    // Usar operador ternario para decidir qué método llamar
-                    if (isAdmin) {
-                      userProvider.getUsers(search: value);
-                    } else {
-                      userProvider.infoUsers(search: value);
-                    }
+                    // Filtrar usuarios cada vez que el texto cambia
+                    _filterUsers(value, userProvider.users);
                   },
                 ),
               ),
@@ -80,7 +118,7 @@ class SearchTableState extends State<SearchTable> {
                         color: Colors.red, fontWeight: FontWeight.bold),
                   ),
                 )
-              else if (userProvider.users.isEmpty)
+              else if (_filteredUsers.isEmpty)
                 const Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Text(
@@ -100,7 +138,7 @@ class SearchTableState extends State<SearchTable> {
                       DataColumn(label: Text("Anexo")),
                       DataColumn(label: Text("Acciones")),
                     ],
-                    rows: userProvider.users.map((user) {
+                    rows: _filteredUsers.map((user) {
                       return DataRow(cells: [
                         DataCell(
                           IconButton(
@@ -158,7 +196,6 @@ class SearchTableState extends State<SearchTable> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Título del modal
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -170,23 +207,21 @@ class SearchTableState extends State<SearchTable> {
                     IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () {
-                        Navigator.of(context).pop(); // Cierra el modal
+                        Navigator.of(context).pop();
                       },
                     ),
                   ],
                 ),
                 const Divider(),
-                // Contenido adicional
                 Text("Ultima Conexion: ${user.ultimaConexion}"),
                 const SizedBox(height: 8),
                 Text("Rol: ${user.rol}"),
                 const SizedBox(height: 16),
-                // Botón para cerrar
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
-                      Navigator.of(context).pop(); // Cierra el modal
+                      Navigator.of(context).pop();
                     },
                     child: const Text("Cerrar"),
                   ),
@@ -219,7 +254,6 @@ class SearchTableState extends State<SearchTable> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Título del modal
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -231,13 +265,12 @@ class SearchTableState extends State<SearchTable> {
                     IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () {
-                        Navigator.of(context).pop(); // Cierra el modal
+                        Navigator.of(context).pop();
                       },
                     ),
                   ],
                 ),
                 const Divider(),
-                // Formulario de edición
                 TextField(
                   controller: nameController,
                   decoration: const InputDecoration(labelText: 'Nombre'),
@@ -258,13 +291,11 @@ class SearchTableState extends State<SearchTable> {
                   decoration: const InputDecoration(labelText: 'Anexo'),
                 ),
                 const SizedBox(height: 16),
-                // Botones de acción
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                        // Lógica para guardar cambios
                         final updatedUser = User(
                           id: user.id,
                           name: nameController.text,
@@ -279,14 +310,14 @@ class SearchTableState extends State<SearchTable> {
                           admin: '',
                         );
                         context.read<UserProvider>().updateUser(1, updatedUser);
-                        Navigator.of(context).pop(); // Cierra el modal
+                        Navigator.of(context).pop();
                       },
                       child: const Text("Guardar"),
                     ),
                     const SizedBox(width: 8),
                     TextButton(
                       onPressed: () {
-                        Navigator.of(context).pop(); // Cierra el modal
+                        Navigator.of(context).pop();
                       },
                       child: const Text("Cancelar"),
                     ),

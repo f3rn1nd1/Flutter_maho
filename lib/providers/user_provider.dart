@@ -34,6 +34,8 @@ class UserProvider extends ChangeNotifier {
   // PATRON SINGLETON
   static final UserProvider _instance = UserProvider._internal();
 
+  var currentUser;
+
   factory UserProvider() {
     return _instance;
   }

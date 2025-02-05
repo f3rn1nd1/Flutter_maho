@@ -227,13 +227,22 @@ class _ProfilePageState extends State<ProfilePage> {
                   final userProvider = UserProvider();
                   await userProvider.updateUser(
                       userData['id'], User.fromJson(updatedUser));
-                  _loadUserData();
+
+                  // Actualizar el estado local directamente
+                  setState(() {
+                    _currentUser = {
+                      ..._currentUser!,
+                      'name': _nameController.text,
+                      'email': _emailController.text,
+                      'telefono': _phoneController.text,
+                    };
+                  });
 
                   Navigator.of(context).pop();
                 }
               },
               child: const Text('Guardar'),
-            ),
+            )
           ],
         );
       },

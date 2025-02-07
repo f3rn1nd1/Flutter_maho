@@ -308,6 +308,32 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
+
+  // Actualizar un usuario
+  Future<void> updateCurrentUser(int id, User userData) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final token = await AuthService.getUserToken();
+      if (token == null) throw Exception('No authentication token found');
+
+      User updatedUser = await _userService.updateInfo(
+          token, id, userData.toJson() as Map<String, dynamic>);
+      int index = _pagination!.users.indexWhere((user) => user.id == id);
+      if (index != -1) {
+        _users[index] = updatedUser;
+      }
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+
   // ===========================
   // Segmento: Autenticación
   // ===========================

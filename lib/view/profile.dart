@@ -182,32 +182,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   TextFormField(
                     controller: _nameController,
                     decoration: const InputDecoration(labelText: 'Nombre'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor ingrese su nombre';
-                      }
-                      return null;
-                    },
                   ),
                   TextFormField(
                     controller: _emailController,
                     decoration: const InputDecoration(labelText: 'Email'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor ingrese su email';
-                      }
-                      return null;
-                    },
                   ),
                   TextFormField(
                     controller: _phoneController,
                     decoration: const InputDecoration(labelText: 'Teléfono'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor ingrese su teléfono';
-                      }
-                      return null;
-                    },
                   ),
                 ],
               ),
@@ -230,7 +212,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   };
 
                   final userProvider = UserProvider();
-                  await userProvider.updateUser(
+                  await userProvider.updateCurrentUser(
                       userData['id'], User.fromJson(updatedUser));
 
                   // Actualizar el estado local directamente

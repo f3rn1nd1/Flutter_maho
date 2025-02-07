@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:projects/providers/user_provider.dart'; // Importa el provider
+import 'login.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -23,7 +24,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context); // Accede al provider
+    final userProvider =
+        Provider.of<UserProvider>(context); // Accede al provider
 
     return Scaffold(
       appBar: AppBar(
@@ -61,7 +63,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.person),
                       contentPadding:
-                      EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 10),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -73,7 +75,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.email),
                       contentPadding:
-                      EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 10),
                     ),
                   ),
                   // Campo de telefono
@@ -85,7 +87,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.phone_iphone),
                       contentPadding:
-                      EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 10),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -96,7 +98,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.phone),
                       contentPadding:
-                      EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 10),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -161,7 +163,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content:
-                            Text('Por favor, completa todos los campos'),
+                                Text('Por favor, completa todos los campos'),
                           ),
                         );
                       } else if (_passwordController.text !=
@@ -183,34 +185,44 @@ class _RegisterPageState extends State<RegisterPage> {
                         };
 
                         try {
-                          // Llamar al método register del provider
-                          final response =await userProvider.register(userData);
+                          final response =
+                              await userProvider.register(userData);
+                          print(
+                              "Registro exitoso: $response"); // Añade este log
 
-                          // Mostrar mensaje de éxito
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Registro exitoso'),
-                            ),
-                          );
+                          if (response.statusCode == 201) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Registro exitoso')),
+                            );
 
-                          // Navegar a otra vista después del registro (opcional)
-                          // Navigator.pushReplacement(
-                          //   context,
-                          //   MaterialPageRoute(builder: (context) => const LoginPage()),
-                          // );
+                            await Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const LoginPage()),
+                            );
+                          } else {
+                            // Manejar otros códigos de estado si es necesario
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text('Error: ${response.body}')),
+                            );
+                          }
                         } catch (e) {
-                          // Mostrar mensaje de error
+                          print("Error en registro: $e"); // Añade este log
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Error: $e'),
-                            ),
+                            SnackBar(content: Text('Error: $e')),
                           );
                         }
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                              builder: (context) => const LoginPage()),
+                          (route) => false,
+                        );
                       }
                     },
                     style: ElevatedButton.styleFrom(
                       minimumSize:
-                      const Size(double.infinity, 50), // Ancho completo
+                          const Size(double.infinity, 50), // Ancho completo
                     ),
                     child: const Text('Registrarse'),
                   ),

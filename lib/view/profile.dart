@@ -66,32 +66,37 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildMobileLayout(Map<String, dynamic> userData) {
-    return SingleChildScrollView(
+    return ListView(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          _buildProfileCard(userData),
-          const SizedBox(height: 16),
-          const SearchTable(), // Llamada al widget SearchTable
-        ],
-      ),
+      children: [
+        _buildProfileCard(userData),
+        const SizedBox(height: 16),
+        const SearchTable(),
+      ],
     );
   }
 
   Widget _buildDesktopLayout(Map<String, dynamic> userData) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: 4,
-          child: _buildProfileCard(userData),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          flex: 8,
-          child: const SearchTable(),
-        ),
-      ],
+    return Scrollbar(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 4,
+            child: _buildProfileCard(userData),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            flex: 8,
+            child: Container(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height * 0.8,
+              ),
+              child: const SearchTable(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

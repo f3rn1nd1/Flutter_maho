@@ -64,10 +64,7 @@ flutter:
 
   assets:
     - .env # Agrega esta línea
-    - assets/user1.webp 
-    - assets/users.png 
-    - assets/usa.png 
-    - assets/user.png  
+   
     - assets/maho.png  
 
 

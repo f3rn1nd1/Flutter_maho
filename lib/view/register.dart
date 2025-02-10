@@ -190,23 +190,15 @@ class _RegisterPageState extends State<RegisterPage> {
                           print(
                               "Registro exitoso: $response"); // Añade este log
 
-                          if (response.statusCode == 201) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Registro exitoso')),
-                            );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Registro exitoso')),
+                          );
 
-                            await Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const LoginPage()),
-                            );
-                          } else {
-                            // Manejar otros códigos de estado si es necesario
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text('Error: ${response.body}')),
-                            );
-                          }
+                          await Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const LoginPage()),
+                          );
                         } catch (e) {
                           print("Error en registro: $e"); // Añade este log
                           ScaffoldMessenger.of(context).showSnackBar(

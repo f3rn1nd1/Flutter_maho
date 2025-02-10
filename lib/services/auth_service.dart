@@ -83,7 +83,7 @@ class AuthService {
       body: jsonEncode(userData),
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 201) {
       return jsonDecode(response.body);
     } else {
       throw Exception('Error al registrar usuario: ${response.statusCode}');

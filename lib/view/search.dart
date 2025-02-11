@@ -134,12 +134,16 @@ class SearchTableState extends State<SearchTable> {
           elevation: 5,
           margin: const EdgeInsets.all(16),
           child: Column(
+            mainAxisSize:
+                MainAxisSize.min, // Ajusta el tamaño del Card al contenido
             children: [
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(6.0),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Expanded(
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.4,
                       child: TextField(
                         controller: _searchController,
                         decoration: InputDecoration(
@@ -191,56 +195,51 @@ class SearchTableState extends State<SearchTable> {
                   ),
                 )
               else
-                SizedBox(
-                  height: MediaQuery.of(context).size.height *
-                      0.6, // Altura definida
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text("")),
-                        DataColumn(label: Text("Nombre")),
-                        DataColumn(label: Text("Correo")),
-                        DataColumn(label: Text("Teléfono")),
-                        DataColumn(label: Text("Anexo")),
-                        DataColumn(label: Text("Acciones")),
-                      ],
-                      rows: _filteredUsers.map((user) {
-                        return DataRow(cells: [
-                          DataCell(
-                            IconButton(
-                              icon: const Icon(Icons.add_circle,
-                                  color: Colors.blue),
-                              onPressed: () => showInfoModal(context, user),
-                            ),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columns: const [
+                      DataColumn(label: Text("")),
+                      DataColumn(label: Text("Nombre")),
+                      DataColumn(label: Text("Correo")),
+                      DataColumn(label: Text("Teléfono")),
+                      DataColumn(label: Text("Anexo")),
+                      DataColumn(label: Text("Acciones")),
+                    ],
+                    rows: _filteredUsers.map((user) {
+                      return DataRow(cells: [
+                        DataCell(
+                          IconButton(
+                            icon: const Icon(Icons.add_circle,
+                                color: Colors.blue),
+                            onPressed: () => showInfoModal(context, user),
                           ),
-                          DataCell(SelectableText(user.name.toString())),
-                          DataCell(SelectableText(user.email.toString())),
-                          DataCell(SelectableText(user.telefono.toString())),
-                          DataCell(SelectableText(user.anexo.toString())),
-                          DataCell(
-                            Row(
-                              children: [
-                                if (isAdmin)
-                                  IconButton(
-                                    icon: const Icon(Icons.edit,
-                                        color: Colors.blue),
-                                    onPressed: () =>
-                                        showEditModal(context, user),
-                                  ),
-                                if (isAdmin)
-                                  IconButton(
-                                    icon: const Icon(Icons.delete,
-                                        color: Colors.red),
-                                    onPressed: () => userProvider
-                                        .deleteUser(user.id!.toInt()),
-                                  ),
-                              ],
-                            ),
+                        ),
+                        DataCell(SelectableText(user.name.toString())),
+                        DataCell(SelectableText(user.email.toString())),
+                        DataCell(SelectableText(user.telefono.toString())),
+                        DataCell(SelectableText(user.anexo.toString())),
+                        DataCell(
+                          Row(
+                            children: [
+                              if (isAdmin)
+                                IconButton(
+                                  icon: const Icon(Icons.edit,
+                                      color: Colors.blue),
+                                  onPressed: () => showEditModal(context, user),
+                                ),
+                              if (isAdmin)
+                                IconButton(
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
+                                  onPressed: () =>
+                                      userProvider.deleteUser(user.id!.toInt()),
+                                ),
+                            ],
                           ),
-                        ]);
-                      }).toList(),
-                    ),
+                        ),
+                      ]);
+                    }).toList(),
                   ),
                 ),
               if (userProvider.pagination != null)

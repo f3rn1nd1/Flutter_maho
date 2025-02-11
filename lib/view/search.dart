@@ -134,11 +134,11 @@ class SearchTableState extends State<SearchTable> {
           elevation: 5,
           margin: const EdgeInsets.all(16),
           child: Column(
-            mainAxisSize:
-                MainAxisSize.min, // Ajusta el tamaño del Card al contenido
+            mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsets.all(6.0),
+                padding: const EdgeInsets.all(
+                    16.0), // Padding para el Row de búsqueda
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -165,7 +165,8 @@ class SearchTableState extends State<SearchTable> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.all(
+                    16.0), // Padding para el SegmentedButton
                 child: SegmentedButton<String>(
                   segments: const [
                     ButtonSegment(value: 'active', label: Text('Activos')),

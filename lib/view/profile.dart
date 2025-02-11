@@ -15,11 +15,18 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   Map<String, dynamic>? _currentUser;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadUserData() async {
@@ -66,36 +73,40 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildMobileLayout(Map<String, dynamic> userData) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        _buildProfileCard(userData),
-        const SizedBox(height: 16),
-        const SearchTable(),
-      ],
+    return Scrollbar(
+      thumbVisibility: true,
+      controller: _scrollController,
+      child: ListView(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildProfileCard(userData),
+          const SizedBox(height: 16),
+          const SearchTable(),
+        ],
+      ),
     );
   }
 
   Widget _buildDesktopLayout(Map<String, dynamic> userData) {
     return Scrollbar(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 4,
-            child: _buildProfileCard(userData),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            flex: 8,
-            child: Container(
+      thumbVisibility: true,
+      controller: _scrollController,
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _buildProfileCard(userData),
+            const SizedBox(height: 16),
+            Container(
               constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height * 0.8,
+                minHeight: MediaQuery.of(context).size.height * 0.6,
               ),
               child: const SearchTable(),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

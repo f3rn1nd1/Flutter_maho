@@ -35,17 +35,31 @@ class SearchTableState extends State<SearchTable> {
     if (isAdmin) {
       if (_selectedView == 'active') {
         userProvider.getUsers(page: _currentPage).then((_) {
-          _filteredUsers = userProvider.users;
+          setState(() {
+            _filteredUsers = userProvider.users;
+          });
         });
       } else {
         userProvider.getTrashUsers(page: _currentPage).then((_) {
-          _filteredUsers = userProvider.users;
+          setState(() {
+            _filteredUsers = userProvider.users;
+          });
         });
       }
     } else {
-      userProvider.infoUsers().then((_) {
-        _filteredUsers = userProvider.users;
-      });
+      if (_selectedView == 'active') {
+        userProvider.infoUsers(page: _currentPage).then((_) {
+          setState(() {
+            _filteredUsers = userProvider.users;
+          });
+        });
+      } else {
+        userProvider.getTrashUsers(page: _currentPage).then((_) {
+          setState(() {
+            _filteredUsers = userProvider.users;
+          });
+        });
+      }
     }
   }
 
@@ -55,7 +69,6 @@ class SearchTableState extends State<SearchTable> {
     super.dispose();
   }
 
-  // Función de búsqueda en tiempo real
   void _filterUsers(String query) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
@@ -80,7 +93,6 @@ class SearchTableState extends State<SearchTable> {
     });
   }
 
-  // Función para manejar la paginación
   void _loadPage(int page) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     if (_selectedView == 'active') {
@@ -138,9 +150,6 @@ class SearchTableState extends State<SearchTable> {
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                         ),
-                        onChanged: (value) {
-                          // Opcional: Si quieres que busque en tiempo real al escribir, mantenlo
-                        },
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -151,7 +160,6 @@ class SearchTableState extends State<SearchTable> {
                   ],
                 ),
               ),
-              // Agregar el SegmentedButton aquí
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: SegmentedButton<String>(
@@ -163,7 +171,8 @@ class SearchTableState extends State<SearchTable> {
                   onSelectionChanged: (Set<String> newSelection) {
                     setState(() {
                       _selectedView = newSelection.first;
-                      _loadUsers(); // Recargar usuarios según la selección
+                      _currentPage = 1;
+                      _loadUsers();
                     });
                   },
                 ),
@@ -182,73 +191,71 @@ class SearchTableState extends State<SearchTable> {
                   ),
                 )
               else
-                Expanded(
+                SizedBox(
+                  height: MediaQuery.of(context).size.height *
+                      0.6, // Altura definida
                   child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        columns: const [
-                          DataColumn(label: Text("")),
-                          DataColumn(label: Text("Nombre")),
-                          DataColumn(label: Text("Correo")),
-                          DataColumn(label: Text("Teléfono")),
-                          DataColumn(label: Text("Anexo")),
-                          DataColumn(label: Text("Acciones")),
-                        ],
-                        rows: _filteredUsers.map((user) {
-                          return DataRow(cells: [
-                            DataCell(
-                              IconButton(
-                                icon: const Icon(Icons.add_circle,
-                                    color: Colors.blue),
-                                onPressed: () => showInfoModal(context, user),
-                              ),
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      columns: const [
+                        DataColumn(label: Text("")),
+                        DataColumn(label: Text("Nombre")),
+                        DataColumn(label: Text("Correo")),
+                        DataColumn(label: Text("Teléfono")),
+                        DataColumn(label: Text("Anexo")),
+                        DataColumn(label: Text("Acciones")),
+                      ],
+                      rows: _filteredUsers.map((user) {
+                        return DataRow(cells: [
+                          DataCell(
+                            IconButton(
+                              icon: const Icon(Icons.add_circle,
+                                  color: Colors.blue),
+                              onPressed: () => showInfoModal(context, user),
                             ),
-                            DataCell(SelectableText(user.name.toString())),
-                            DataCell(SelectableText(user.email.toString())),
-                            DataCell(SelectableText(user.telefono.toString())),
-                            DataCell(SelectableText(user.anexo.toString())),
-                            DataCell(
-                              Row(
-                                children: [
-                                  if (isAdmin)
-                                    IconButton(
-                                      icon: const Icon(Icons.edit,
-                                          color: Colors.blue),
-                                      onPressed: () =>
-                                          showEditModal(context, user),
-                                    ),
-                                  if (isAdmin)
-                                    IconButton(
-                                      icon: const Icon(Icons.delete,
-                                          color: Colors.red),
-                                      onPressed: () => userProvider
-                                          .deleteUser(user.id!.toInt()),
-                                    ),
-                                ],
-                              ),
+                          ),
+                          DataCell(SelectableText(user.name.toString())),
+                          DataCell(SelectableText(user.email.toString())),
+                          DataCell(SelectableText(user.telefono.toString())),
+                          DataCell(SelectableText(user.anexo.toString())),
+                          DataCell(
+                            Row(
+                              children: [
+                                if (isAdmin)
+                                  IconButton(
+                                    icon: const Icon(Icons.edit,
+                                        color: Colors.blue),
+                                    onPressed: () =>
+                                        showEditModal(context, user),
+                                  ),
+                                if (isAdmin)
+                                  IconButton(
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.red),
+                                    onPressed: () => userProvider
+                                        .deleteUser(user.id!.toInt()),
+                                  ),
+                              ],
                             ),
-                          ]);
-                        }).toList(),
-                      ),
+                          ),
+                        ]);
+                      }).toList(),
                     ),
                   ),
                 ),
-              // Paginación
               if (userProvider.pagination != null)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
-                      icon: Icon(Icons.arrow_back),
+                      icon: const Icon(Icons.arrow_back),
                       onPressed: _currentPage > 1
                           ? () => _loadPage(_currentPage - 1)
                           : null,
                     ),
                     Text('Página $_currentPage'),
                     IconButton(
-                      icon: Icon(Icons.arrow_forward),
+                      icon: const Icon(Icons.arrow_forward),
                       onPressed:
                           _currentPage < userProvider.pagination!.totalPages
                               ? () => _loadPage(_currentPage + 1)
@@ -391,7 +398,9 @@ class SearchTableState extends State<SearchTable> {
                           createdAt: '',
                           admin: '',
                         );
-                        context.read<UserProvider>().updateUser(1, updatedUser);
+                        context
+                            .read<UserProvider>()
+                            .updateUser(user.id!.toInt(), updatedUser);
                         Navigator.of(context).pop();
                       },
                       child: const Text('Guardar'),

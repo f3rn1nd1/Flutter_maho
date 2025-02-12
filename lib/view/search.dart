@@ -384,7 +384,7 @@ class SearchTableState extends State<SearchTable> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         final updatedUser = User(
                           id: user.id,
                           name: nameController.text,
@@ -398,9 +398,10 @@ class SearchTableState extends State<SearchTable> {
                           createdAt: '',
                           admin: '',
                         );
-                        context
+                        await context
                             .read<UserProvider>()
                             .updateUser(user.id!.toInt(), updatedUser);
+                        _loadUsers(); // Actualizar la lista de usuarios
                         Navigator.of(context).pop();
                       },
                       child: const Text('Guardar'),

@@ -173,10 +173,9 @@ class UserProvider extends ChangeNotifier {
       final token = await AuthService.getUserToken();
       if (token == null) throw Exception('No authentication token found');
 
-      Paginate trashPagination =
+      _pagination =
       await _userService.getTrashUsers(token, page: page, search: search);
-      _pagination = trashPagination;
-      _users = trashPagination.users; // Agrega esta línea para actualizar la lista de usuarios
+      _users = _pagination!.users; // Agrega esta línea para actualizar la lista de usuarios
 
       _isLoading = false;
       notifyListeners();

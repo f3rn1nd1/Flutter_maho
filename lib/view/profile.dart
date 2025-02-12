@@ -64,14 +64,15 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _logout(BuildContext context) {
-    final UserProvider userProvider = UserProvider();
-    userProvider.logout();
+  void _logout(BuildContext context) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.logout();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const LoginPage()),
     );
   }
+
 
   Widget _buildMobileLayout(Map<String, dynamic> userData) {
     // Obtén el provider del contexto

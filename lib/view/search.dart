@@ -13,7 +13,6 @@ class SearchTable extends StatefulWidget {
   SearchTableState createState() => SearchTableState();
 }
 
-
 class SearchTableState extends State<SearchTable> {
   final TextEditingController _searchController = TextEditingController();
   List<User> _filteredUsers = [];
@@ -31,47 +30,34 @@ class SearchTableState extends State<SearchTable> {
     _loadUsers();
   }
 
-  void _loadUsers() async {
+  Future<void> _loadUsers() async {
     // Obtén los datos del usuario desde AuthService
     final userData = await AuthService.getUserData();
-
-    // Verifica si el usuario es admin (ajusta la validación según cómo se guarden los datos)
     bool isAdmin = userData != null && userData['admin']?.toString() == "1";
-
-    // Obtén el provider
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    // Dependiendo del rol y la vista seleccionada, realiza la petición correspondiente
     if (isAdmin) {
       if (_selectedView == 'active') {
         await userProvider.getUsers(page: _currentPage);
-        setState(() {
-          _filteredUsers = userProvider.users;
-        });
       } else {
         await userProvider.getTrashUsers(page: _currentPage);
-        setState(() {
-          _filteredUsers = userProvider.users;
-        });
       }
     } else {
       if (_selectedView == 'active') {
         await userProvider.infoUsers(page: _currentPage);
-        setState(() {
-          _filteredUsers = userProvider.users;
-        });
       } else {
-        // En caso de que el usuario no admin seleccione "Eliminados", puedes mostrar un mensaje o definir otra acción
-        setState(() {
-          _filteredUsers = [];
-        });
+        // Usuario no admin: no se permite ver la papelera
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No tienes permisos para ver usuarios eliminados.')),
         );
+        _filteredUsers = [];
+        return;
       }
     }
+    setState(() {
+      _filteredUsers = userProvider.users;
+    });
   }
-
 
   @override
   void dispose() {
@@ -81,26 +67,23 @@ class SearchTableState extends State<SearchTable> {
 
   void _filterUsers(String query) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-
-    setState(() {
-      if (query.isEmpty) {
-        _loadPage(1);
+    if (query.isEmpty) {
+      _loadPage(1);
+    } else {
+      if (_selectedView == 'active') {
+        userProvider.getUsers(page: 1, search: query).then((_) {
+          setState(() {
+            _filteredUsers = userProvider.users;
+          });
+        });
       } else {
-        if (_selectedView == 'active') {
-          userProvider.getUsers(page: 1, search: query).then((_) {
-            setState(() {
-              _filteredUsers = userProvider.users;
-            });
+        userProvider.getTrashUsers(page: 1, search: query).then((_) {
+          setState(() {
+            _filteredUsers = userProvider.users;
           });
-        } else {
-          userProvider.getTrashUsers(page: 1, search: query).then((_) {
-            setState(() {
-              _filteredUsers = userProvider.users;
-            });
-          });
-        }
+        });
       }
-    });
+    }
   }
 
   void _loadPage(int page) {
@@ -122,33 +105,81 @@ class SearchTableState extends State<SearchTable> {
     }
   }
 
+  // Método auxiliar para construir las filas de la tabla de forma condicional
+  List<DataRow> _buildRows(UserProvider userProvider, bool isAdmin) {
+    return _filteredUsers.map((user) {
+      return DataRow(cells: [
+        // Puedes conservar el botón de información si lo deseas
+        DataCell(
+          IconButton(
+            icon: const Icon(Icons.add_circle, color: Colors.blue),
+            onPressed: () => showInfoModal(context, user),
+          ),
+        ),
+        DataCell(SelectableText(user.name.toString())),
+        DataCell(SelectableText(user.email.toString())),
+        DataCell(SelectableText(user.telefono.toString())),
+        DataCell(SelectableText(user.anexo.toString())),
+        DataCell(
+          Row(
+            children: _selectedView == 'active'
+                ? [
+              if (isAdmin)
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.blue),
+                  onPressed: () => showEditModal(context, user),
+                ),
+              if (isAdmin)
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () =>
+                      userProvider.deleteUser(user.id!.toInt()),
+                ),
+            ]
+                : [
+              // Para la vista trash se muestran botones para restaurar o eliminar permanentemente
+              if (isAdmin)
+                IconButton(
+                  icon: const Icon(Icons.restore, color: Colors.green),
+                  onPressed: () =>
+                      userProvider.restoreUser(user.id!.toInt()),
+                ),
+              if (isAdmin)
+                IconButton(
+                  icon: const Icon(Icons.delete_forever, color: Colors.red),
+                  onPressed: () =>
+                      userProvider.forceDeleteUser(user.id!.toInt()),
+                ),
+            ],
+          ),
+        ),
+      ]);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
-
     return FutureBuilder<Map<String, dynamic>>(
       future: AuthService.getUserData().then((value) => value ?? {}),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-
         if (snapshot.hasError) {
           return const Center(child: Text("Error al cargar datos"));
         }
-
         Map<String, dynamic> userData = snapshot.data ?? {};
         bool isAdmin = userData['admin']?.toString() == "1";
-
         return Card(
           elevation: 5,
           margin: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Fila de búsqueda
               Padding(
-                padding: const EdgeInsets.all(
-                    16.0), // Padding para el Row de búsqueda
+                padding: const EdgeInsets.all(16.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -174,9 +205,9 @@ class SearchTableState extends State<SearchTable> {
                   ],
                 ),
               ),
+              // SegmentedButton para cambiar entre Activos y Eliminados
               Padding(
-                padding: const EdgeInsets.all(
-                    16.0), // Padding para el SegmentedButton
+                padding: const EdgeInsets.all(16.0),
                 child: SegmentedButton<String>(
                   segments: const [
                     ButtonSegment(value: 'active', label: Text('Activos')),
@@ -187,11 +218,12 @@ class SearchTableState extends State<SearchTable> {
                     setState(() {
                       _selectedView = newSelection.first;
                       _currentPage = 1;
-                      _loadUsers();
                     });
+                    _loadUsers();
                   },
                 ),
               ),
+              // Indicador de carga o mensaje de vacío
               if (userProvider.isLoading)
                 const Padding(
                   padding: EdgeInsets.all(16.0),
@@ -206,6 +238,7 @@ class SearchTableState extends State<SearchTable> {
                   ),
                 )
               else
+              // Tabla de datos con formato condicional según la vista
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: DataTable(
@@ -217,42 +250,10 @@ class SearchTableState extends State<SearchTable> {
                       DataColumn(label: Text("Anexo")),
                       DataColumn(label: Text("Acciones")),
                     ],
-                    rows: _filteredUsers.map((user) {
-                      return DataRow(cells: [
-                        DataCell(
-                          IconButton(
-                            icon: const Icon(Icons.add_circle,
-                                color: Colors.blue),
-                            onPressed: () => showInfoModal(context, user),
-                          ),
-                        ),
-                        DataCell(SelectableText(user.name.toString())),
-                        DataCell(SelectableText(user.email.toString())),
-                        DataCell(SelectableText(user.telefono.toString())),
-                        DataCell(SelectableText(user.anexo.toString())),
-                        DataCell(
-                          Row(
-                            children: [
-                              if (isAdmin)
-                                IconButton(
-                                  icon: const Icon(Icons.edit,
-                                      color: Colors.blue),
-                                  onPressed: () => showEditModal(context, user),
-                                ),
-                              if (isAdmin)
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () =>
-                                      userProvider.deleteUser(user.id!.toInt()),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ]);
-                    }).toList(),
+                    rows: _buildRows(userProvider, isAdmin),
                   ),
                 ),
+              // Controles de paginación
               if (userProvider.pagination != null)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -266,10 +267,9 @@ class SearchTableState extends State<SearchTable> {
                     Text('Página $_currentPage'),
                     IconButton(
                       icon: const Icon(Icons.arrow_forward),
-                      onPressed:
-                          _currentPage < userProvider.pagination!.totalPages
-                              ? () => _loadPage(_currentPage + 1)
-                              : null,
+                      onPressed: _currentPage < userProvider.pagination!.totalPages
+                          ? () => _loadPage(_currentPage + 1)
+                          : null,
                     ),
                   ],
                 ),
@@ -286,8 +286,7 @@ class SearchTableState extends State<SearchTable> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Container(
             padding: const EdgeInsets.all(16),
             width: MediaQuery.of(context).size.width * 0.4,
@@ -300,28 +299,23 @@ class SearchTableState extends State<SearchTable> {
                   children: [
                     const Text(
                       "Información adicional",
-                      style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
                 ),
                 const Divider(),
-                Text("Ultima Conexion: ${user.ultimaConexion}"),
+                Text("Última Conexión: ${user.ultimaConexion}"),
                 const SizedBox(height: 8),
                 Text("Rol: ${user.rol}"),
                 const SizedBox(height: 16),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
+                    onPressed: () => Navigator.of(context).pop(),
                     child: const Text("Cerrar"),
                   ),
                 ),
@@ -333,7 +327,7 @@ class SearchTableState extends State<SearchTable> {
     );
   }
 
-  // Modal de edición
+  // Modal de edición (se utiliza sólo en vista activa)
   void showEditModal(BuildContext context, User user) {
     final nameController = TextEditingController(text: user.name);
     final emailController = TextEditingController(text: user.email);
@@ -344,8 +338,7 @@ class SearchTableState extends State<SearchTable> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Container(
             padding: const EdgeInsets.all(16),
             width: MediaQuery.of(context).size.width * 0.4,
@@ -358,14 +351,11 @@ class SearchTableState extends State<SearchTable> {
                   children: [
                     const Text(
                       "Editar información",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
                 ),
@@ -408,9 +398,7 @@ class SearchTableState extends State<SearchTable> {
                           createdAt: '',
                           admin: '',
                         );
-                        context
-                            .read<UserProvider>()
-                            .updateUser(user.id!.toInt(), updatedUser);
+                        context.read<UserProvider>().updateUser(user.id!.toInt(), updatedUser);
                         Navigator.of(context).pop();
                       },
                       child: const Text('Guardar'),

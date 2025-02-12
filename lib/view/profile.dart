@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projects/providers/user_provider.dart';
+import 'package:provider/provider.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
 import 'search.dart'; // Importar la tabla de búsqueda
@@ -73,6 +74,9 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildMobileLayout(Map<String, dynamic> userData) {
+    // Obtén el provider del contexto
+    final userProvider = Provider.of<UserProvider>(context);
+
     return Scrollbar(
       thumbVisibility: true,
       controller: _scrollController,
@@ -82,13 +86,17 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           _buildProfileCard(userData),
           const SizedBox(height: 16),
-          const SearchTable(),
+          // Ya no es const porque userProvider.currentUser es un valor en tiempo de ejecución
+          SearchTable(currentUser: userProvider.currentUser),
         ],
       ),
     );
   }
 
   Widget _buildDesktopLayout(Map<String, dynamic> userData) {
+    // Obtén el provider del contexto
+    final userProvider = Provider.of<UserProvider>(context);
+
     return Scrollbar(
       thumbVisibility: true,
       controller: _scrollController,
@@ -103,13 +111,14 @@ class _ProfilePageState extends State<ProfilePage> {
               constraints: BoxConstraints(
                 minHeight: MediaQuery.of(context).size.height * 0.6,
               ),
-              child: const SearchTable(),
+              child: SearchTable(currentUser: userProvider.currentUser),
             ),
           ],
         ),
       ),
     );
   }
+
 
   Widget _buildProfileCard(Map<String, dynamic> userData) {
     return Card(

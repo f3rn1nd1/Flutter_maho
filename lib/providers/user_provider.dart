@@ -20,27 +20,15 @@ class UserProvider extends ChangeNotifier {
   // AUTHINICIO
   String? _token;
   Map<String, dynamic>? _currentUser;
+  var currentUser; // Asegúrate de asignarle un valor posteriormente.
 
-  String? get token => _token;
-  Map<String, dynamic>? get userData => _currentUser;
-
-  // Inicializa el controlador y obtiene el token guardado
   Future<void> initialize() async {
     _token = await AuthService.getUserToken();
     _currentUser = await AuthService.getUserData();
+    currentUser = _currentUser; // Asignas el valor obtenido
     notifyListeners();
   }
 
-  // PATRON SINGLETON
-  static final UserProvider _instance = UserProvider._internal();
-
-  var currentUser;
-
-  factory UserProvider() {
-    return _instance;
-  }
-
-  UserProvider._internal();
 
   // ===========================
   // Segmento: Administrador
@@ -186,8 +174,9 @@ class UserProvider extends ChangeNotifier {
       if (token == null) throw Exception('No authentication token found');
 
       Paginate trashPagination =
-          await _userService.getTrashUsers(token, page: page, search: search);
+      await _userService.getTrashUsers(token, page: page, search: search);
       _pagination = trashPagination;
+      _users = trashPagination.users; // Agrega esta línea para actualizar la lista de usuarios
 
       _isLoading = false;
       notifyListeners();
@@ -197,6 +186,7 @@ class UserProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
 
   // Obtener usuarios con papelera
   Future<void> getUsersWithTrash() async {

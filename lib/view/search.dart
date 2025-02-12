@@ -5,11 +5,14 @@ import 'package:projects/providers/user_provider.dart';
 import '../models/user.dart';
 
 class SearchTable extends StatefulWidget {
-  const SearchTable({super.key});
+  final dynamic currentUser; // O el tipo que corresponda
+
+  const SearchTable({Key? key, required this.currentUser}) : super(key: key);
 
   @override
   SearchTableState createState() => SearchTableState();
 }
+
 
 class SearchTableState extends State<SearchTable> {
   final TextEditingController _searchController = TextEditingController();
@@ -28,40 +31,47 @@ class SearchTableState extends State<SearchTable> {
     _loadUsers();
   }
 
-  void _loadUsers() {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final isAdmin = userProvider.currentUser?.admin == 1;
+  void _loadUsers() async {
+    // Obtén los datos del usuario desde AuthService
+    final userData = await AuthService.getUserData();
 
+    // Verifica si el usuario es admin (ajusta la validación según cómo se guarden los datos)
+    bool isAdmin = userData != null && userData['admin']?.toString() == "1";
+
+    // Obtén el provider
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    // Dependiendo del rol y la vista seleccionada, realiza la petición correspondiente
     if (isAdmin) {
       if (_selectedView == 'active') {
-        userProvider.getUsers(page: _currentPage).then((_) {
-          setState(() {
-            _filteredUsers = userProvider.users;
-          });
+        await userProvider.getUsers(page: _currentPage);
+        setState(() {
+          _filteredUsers = userProvider.users;
         });
       } else {
-        userProvider.getTrashUsers(page: _currentPage).then((_) {
-          setState(() {
-            _filteredUsers = userProvider.users;
-          });
+        await userProvider.getTrashUsers(page: _currentPage);
+        setState(() {
+          _filteredUsers = userProvider.users;
         });
       }
     } else {
       if (_selectedView == 'active') {
-        userProvider.infoUsers(page: _currentPage).then((_) {
-          setState(() {
-            _filteredUsers = userProvider.users;
-          });
+        await userProvider.infoUsers(page: _currentPage);
+        setState(() {
+          _filteredUsers = userProvider.users;
         });
       } else {
-        userProvider.getTrashUsers(page: _currentPage).then((_) {
-          setState(() {
-            _filteredUsers = userProvider.users;
-          });
+        // En caso de que el usuario no admin seleccione "Eliminados", puedes mostrar un mensaje o definir otra acción
+        setState(() {
+          _filteredUsers = [];
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No tienes permisos para ver usuarios eliminados.')),
+        );
       }
     }
   }
+
 
   @override
   void dispose() {
@@ -277,7 +287,7 @@ class SearchTableState extends State<SearchTable> {
       builder: (BuildContext context) {
         return Dialog(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Container(
             padding: const EdgeInsets.all(16),
             width: MediaQuery.of(context).size.width * 0.4,
@@ -291,7 +301,7 @@ class SearchTableState extends State<SearchTable> {
                     const Text(
                       "Información adicional",
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close),

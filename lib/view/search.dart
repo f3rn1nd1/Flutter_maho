@@ -134,8 +134,67 @@ class SearchTableState extends State<SearchTable> {
                     if (isAdmin)
                       IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () =>
-                            userProvider.deleteUser(user.id!.toInt()),
+                        onPressed: () {
+                          // Mostrar el AlertDialog
+                          showDialog(
+                            context:
+                                context, // Necesitas el contexto para mostrar el diálogo
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.zero, // Borde cuadrado
+                                ),
+                                title: Column(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: Colors
+                                          .orange, // Color de fondo del círculo
+                                      radius: 24, // Tamaño del círculo
+                                      child: const Icon(
+                                        Icons
+                                            .warning_amber, // Ícono de advertencia
+                                        color: Colors.white, // Color del ícono
+                                        size: 32, // Tamaño del ícono
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                        height:
+                                            16), // Espacio entre el ícono y el texto
+                                    const Text(
+                                      '¿Eliminar usuario?', // Texto de confirmación
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                content: const Text(
+                                  'Esta acción no se puede deshacer.', // Mensaje adicional
+                                  textAlign: TextAlign.center,
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: const Text('Cancelar'),
+                                    onPressed: () {
+                                      // Cerrar el diálogo sin hacer nada
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: const Text('Eliminar',
+                                        style: TextStyle(color: Colors.red)),
+                                    onPressed: () {
+                                      // Cerrar el diálogo y proceder con la eliminación
+                                      Navigator.of(context).pop();
+                                      userProvider.deleteUser(user.id!.toInt());
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
                       ),
                   ]
                 : [
@@ -314,6 +373,16 @@ class SearchTableState extends State<SearchTable> {
                   ],
                 ),
                 const Divider(),
+                Text("Nombre: ${user.name}"),
+                const SizedBox(height: 8),
+                Text("Correo electronico: ${user.email}"),
+                const SizedBox(height: 8),
+                Text("Estado: ${user.estado}"),
+                const SizedBox(height: 8),
+                Text("Telefono: ${user.telefono}"),
+                const SizedBox(height: 8),
+                Text("Anexo: ${user.anexo}"),
+                const SizedBox(height: 8),
                 Text("Última Conexión: ${user.ultimaConexion}"),
                 const SizedBox(height: 8),
                 Text("Rol: ${user.rol}"),

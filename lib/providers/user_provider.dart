@@ -29,7 +29,6 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-
   // ===========================
   // Segmento: Administrador
   // ===========================
@@ -174,8 +173,9 @@ class UserProvider extends ChangeNotifier {
       if (token == null) throw Exception('No authentication token found');
 
       _pagination =
-      await _userService.getTrashUsers(token, page: page, search: search);
-      _users = _pagination!.users; // Agrega esta línea para actualizar la lista de usuarios
+          await _userService.getTrashUsers(token, page: page, search: search);
+      _users = _pagination!
+          .users; // Agrega esta línea para actualizar la lista de usuarios
 
       _isLoading = false;
       notifyListeners();
@@ -185,7 +185,6 @@ class UserProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 
   // Obtener usuarios con papelera
   Future<void> getUsersWithTrash() async {
@@ -297,7 +296,6 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-
   // Actualizar un usuario
   Future<void> updateCurrentUser(int id, User userData) async {
     try {
@@ -321,7 +319,6 @@ class UserProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 
   // ===========================
   // Segmento: Autenticación

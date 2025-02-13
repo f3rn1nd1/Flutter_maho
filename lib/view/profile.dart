@@ -73,7 +73,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-
   Widget _buildMobileLayout(Map<String, dynamic> userData) {
     // Obtén el provider del contexto
     final userProvider = Provider.of<UserProvider>(context);
@@ -119,7 +118,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
 
   Widget _buildProfileCard(Map<String, dynamic> userData) {
     return Card(

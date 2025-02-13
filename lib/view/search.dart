@@ -207,10 +207,66 @@ class SearchTableState extends State<SearchTable> {
                       ),
                     if (isAdmin)
                       IconButton(
-                        icon:
-                            const Icon(Icons.delete_forever, color: Colors.red),
-                        onPressed: () =>
-                            userProvider.forceDeleteUser(user.id!.toInt()),
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          // Mostrar el AlertDialog
+                          showDialog(
+                            context:
+                                context, // Necesitas el contexto para mostrar el diálogo
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.zero, // Borde cuadrado
+                                ),
+                                title: Column(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: const Color.fromARGB(
+                                          255,
+                                          162,
+                                          23,
+                                          23), // Color de fondo del círculo
+                                      radius: 24, // Tamaño del círculo
+                                      child: const Icon(
+                                        Icons
+                                            .warning_amber, // Ícono de advertencia
+                                        color: Colors.white, // Color del ícono
+                                        size: 32, // Tamaño del ícono
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                        height:
+                                            16), // Espacio entre el ícono y el texto
+                                  ],
+                                ),
+                                content: const Text(
+                                  'Esta seguro de eliminar permanentemente este usuario.', // Mensaje adicional
+                                  textAlign: TextAlign.center,
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: const Text('Cancelar'),
+                                    onPressed: () {
+                                      // Cerrar el diálogo sin hacer nada
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: const Text('Eliminar',
+                                        style: TextStyle(color: Colors.red)),
+                                    onPressed: () {
+                                      // Cerrar el diálogo y proceder con la eliminación
+                                      Navigator.of(context).pop();
+                                      userProvider
+                                          .forceDeleteUser(user.id!.toInt());
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
                       ),
                   ],
           ),

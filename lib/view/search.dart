@@ -49,8 +49,8 @@ class SearchTableState extends State<SearchTable> {
         // Usuario no admin: no se permite ver la papelera
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content:
-                  Text('No tienes permisos para ver usuarios eliminados.')),
+            content: Text('No tienes permisos para ver usuarios eliminados.'),
+          ),
         );
         _filteredUsers = [];
         return;
@@ -60,6 +60,7 @@ class SearchTableState extends State<SearchTable> {
       _filteredUsers = userProvider.users;
     });
   }
+
 
   @override
   void dispose() {

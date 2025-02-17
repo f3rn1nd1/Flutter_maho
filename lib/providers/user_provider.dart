@@ -29,6 +29,16 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+
+  // PATRON SINGLETON
+  static final UserProvider _instance = UserProvider._internal();
+
+  factory UserProvider() {
+    return _instance;
+  }
+
+  UserProvider._internal();
+
   // ===========================
   // Segmento: Administrador
   // ===========================
@@ -163,28 +173,32 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  // Obtener usuarios de la papelera
-  Future<void> getTrashUsers({int page = 1, String search = ""}) async {
+// Obtener usuarios de la papelera
+  Future<void> getTrashUsers({int? page, String? search}) async {
     try {
       _isLoading = true;
+      _users = []; // Limpiar la lista anterior para evitar conservar datos previos.
       notifyListeners();
 
       final token = await AuthService.getUserToken();
       if (token == null) throw Exception('No authentication token found');
 
-      _pagination =
-          await _userService.getTrashUsers(token, page: page, search: search);
-      _users = _pagination!
-          .users; // Agrega esta línea para actualizar la lista de usuarios
+      // Usar valores predeterminados si no se reciben
+      final int _page = page ?? 1;
+      final String _search = search ?? "";
 
-      _isLoading = false;
-      notifyListeners();
+      _pagination = await _userService.getTrashUsers(token, page: _page, search: _search);
+      _users = _pagination!.users; // Actualiza la lista con los datos obtenidos.
     } catch (e) {
       _errorMessage = e.toString();
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
+
+
+
 
   // Obtener usuarios con papelera
   Future<void> getUsersWithTrash() async {

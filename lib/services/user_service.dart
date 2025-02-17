@@ -89,10 +89,20 @@ class UserService {
 
 
 
-  // Obtener usuarios en la papelera con paginación
-  Future<Paginate> getTrashUsers(String token, {int page = 1, String search= ""}) async {
-    final url = Uri.parse('$baseUrl/trash?search=$search&page=$page');
-    final response = await http.get(url, headers: {
+// Obtener usuarios en la papelera con paginación
+  Future<Paginate> getTrashUsers(String token, {int? page, String? search}) async {
+    // Construir la URL manualmente según los parámetros
+    String url = '$baseUrl/trash';
+
+    // Agregar parámetros solo si existen
+    if (search != null && search.isNotEmpty) {
+      url += '?search=$search';
+    }
+    if (page != null) {
+      url += (search != null && search.isNotEmpty) ? '&page=$page' : '?page=$page';
+    }
+
+    final response = await http.get(Uri.parse(url), headers: {
       'Authorization': 'Bearer $token',
     });
 
@@ -102,6 +112,7 @@ class UserService {
       throw Exception('Failed to load trash users: ${response.statusCode}');
     }
   }
+
 
 
   // Obtener usuarios con papelera

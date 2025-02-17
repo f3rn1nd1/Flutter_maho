@@ -5,14 +5,14 @@ class Paginate {
   final int currentPage;
   final int totalPages;
   final int totalUsers;
-  final int perPage;
+  final int? perPage; // Hacemos perPage opcional
 
   Paginate({
     required this.users,
     required this.currentPage,
     required this.totalPages,
     required this.totalUsers,
-    required this.perPage,
+    this.perPage, // Se vuelve opcional
   });
 
   factory Paginate.fromJson(Map<String, dynamic> json) {
@@ -21,7 +21,7 @@ class Paginate {
       currentPage: json['current_page'],
       totalPages: json['total_pages'],
       totalUsers: json['total_users'],
-      perPage: json['per_page'],
+      perPage: json['per_page'] != null ? json['per_page'] as int : null, // Manejo de null
     );
   }
 }

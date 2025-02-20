@@ -314,6 +314,21 @@ class SearchTableState extends State<SearchTable> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // Botón de crear usuario (solo para administradores)
+                    if (isAdmin)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 16.0),
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showCreateUserDialog(context),
+                          icon: const Icon(Icons.person_add),
+                          label: const Text('Crear Usuario'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                    // Campo de búsqueda
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.4,
                       child: TextField(
@@ -557,6 +572,165 @@ class SearchTableState extends State<SearchTable> {
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  void _showCreateUserDialog(BuildContext context) {
+    final _formKey = GlobalKey<FormState>();
+    final _nameController = TextEditingController();
+    final _emailController = TextEditingController();
+    final _passwordController = TextEditingController();
+    final _passwordConfirmationController = TextEditingController();
+    final _phoneController = TextEditingController();
+    final _anexoController = TextEditingController();
+    String _selectedRol = 'Editor';
+    String _selectedAdmin = '0';
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Crear Nuevo Usuario'),
+          content: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(labelText: 'Nombre *'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese un nombre';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(labelText: 'Email *'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese un email';
+                      }
+                      if (!value.contains('@')) {
+                        return 'Por favor ingrese un email válido';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration:
+                        const InputDecoration(labelText: 'Contraseña *'),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese una contraseña';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: _passwordConfirmationController,
+                    decoration: const InputDecoration(
+                        labelText: 'Confirmar Contraseña *'),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor confirme la contraseña';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'Las contraseñas no coinciden';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: _phoneController,
+                    decoration: const InputDecoration(labelText: 'Teléfono'),
+                  ),
+                  TextFormField(
+                    controller: _anexoController,
+                    decoration: const InputDecoration(labelText: 'Anexo'),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: _selectedRol,
+                    decoration: const InputDecoration(labelText: 'Rol *'),
+                    items: const [
+                      DropdownMenuItem(
+                          value: 'Editor', child: Text('Usuario Comun')),
+                      DropdownMenuItem(
+                          value: 'Admin', child: Text('Administrador')),
+                    ],
+                    onChanged: (value) {
+                      _selectedRol = value!;
+                      _selectedAdmin = value == 'Admin' ? '1' : '0';
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (_formKey.currentState!.validate()) {
+                  final userData = {
+                    'user': {
+                      'name': _nameController.text,
+                      'email': _emailController.text,
+                      'password': _passwordController.text,
+                      'password_confirmation':
+                          _passwordConfirmationController.text,
+                      'rol': _selectedRol,
+                      'telefono': _phoneController.text,
+                      'admin': _selectedAdmin,
+                      'anexo': _anexoController.text,
+                      'estado': 'activo'
+                    }
+                  };
+
+                  try {
+                    await context.read<UserProvider>().createUser(userData);
+                    Navigator.of(context).pop();
+                    _loadUsers();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Usuario creado exitosamente'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } catch (e) {
+                    String errorMessage = 'Error al crear usuario';
+                    if (e is Map && e.containsKey('message')) {
+                      final errors = e['message'] as Map<String, dynamic>;
+                      errorMessage =
+                          errors.values.expand((x) => x as List).join('\n');
+                    } else {
+                      errorMessage = e.toString();
+                    }
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(errorMessage),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('Crear'),
+            ),
+          ],
         );
       },
     );

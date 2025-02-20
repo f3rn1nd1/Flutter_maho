@@ -26,26 +26,27 @@ class UserService {
   }
 
   // Crear un nuevo usuario
-  Future<User> createUser(String token, Map<String, User> userData) async {
-    final url = Uri.parse('$baseUrl/users');
+  Future<User> createUser(String token, Map<String, dynamic> userData) async {
     final response = await http.post(
-      url,
+      Uri.parse('$baseUrl/users'),
       headers: {
-        'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
       },
-      body: jsonEncode(userData),
+      body: jsonEncode(userData['user']),
     );
 
     if (response.statusCode == 201) {
-      return User.fromJson(jsonDecode(response.body));
+      return User.fromJson(jsonDecode(response.body)['user']);
     } else {
-      throw Exception('Failed to create user: ${response.statusCode}');
+      final errorData = jsonDecode(response.body);
+      throw errorData;
     }
   }
 
   // Actualizar la información de un usuario
-  Future<User> updateUser(String token, int id, Map<String, dynamic> userData) async {
+  Future<User> updateUser(
+      String token, int id, Map<String, dynamic> userData) async {
     final url = Uri.parse('$baseUrl/users/$id');
     final response = await http.put(
       url,
@@ -64,7 +65,8 @@ class UserService {
   }
 
   // Obtener todos los usuarios con paginación
-  Future<Paginate> getAllUsers(String token, {int? page, String? search}) async {
+  Future<Paginate> getAllUsers(String token,
+      {int? page, String? search}) async {
     // Construir la URL manualmente según los parámetros
     String url = '$baseUrl/users';
 
@@ -73,7 +75,8 @@ class UserService {
       url += '?search=$search';
     }
     if (page != null) {
-      url += search != null && search.isNotEmpty ? '&page=$page' : '?page=$page';
+      url +=
+          search != null && search.isNotEmpty ? '&page=$page' : '?page=$page';
     }
 
     final response = await http.get(Uri.parse(url), headers: {
@@ -87,10 +90,9 @@ class UserService {
     }
   }
 
-
-
 // Obtener usuarios en la papelera con paginación
-  Future<Paginate> getTrashUsers(String token, {int? page, String? search}) async {
+  Future<Paginate> getTrashUsers(String token,
+      {int? page, String? search}) async {
     // Construir la URL manualmente según los parámetros
     String url = '$baseUrl/trash';
 
@@ -99,7 +101,8 @@ class UserService {
       url += '?search=$search';
     }
     if (page != null) {
-      url += (search != null && search.isNotEmpty) ? '&page=$page' : '?page=$page';
+      url +=
+          (search != null && search.isNotEmpty) ? '&page=$page' : '?page=$page';
     }
 
     final response = await http.get(Uri.parse(url), headers: {
@@ -113,8 +116,6 @@ class UserService {
     }
   }
 
-
-
   // Obtener usuarios con papelera
   Future<List<User>> getUsersWithTrash(String token) async {
     final url = Uri.parse('$baseUrl/with-trash');
@@ -126,7 +127,8 @@ class UserService {
       final List<dynamic> usersJson = jsonDecode(response.body);
       return usersJson.map((json) => User.fromJson(json)).toList();
     } else {
-      throw Exception('Failed to load users with trash: ${response.statusCode}');
+      throw Exception(
+          'Failed to load users with trash: ${response.statusCode}');
     }
   }
 
@@ -196,12 +198,14 @@ class UserService {
     if (response.statusCode == 200) {
       return User.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Failed to load current user info: ${response.statusCode}');
+      throw Exception(
+          'Failed to load current user info: ${response.statusCode}');
     }
   }
 
   // Obtener información de todos los usuarios (con búsqueda y paginación)
-  Future<Paginate> getInfoAllUsers(String token, {int? page, String? search}) async {
+  Future<Paginate> getInfoAllUsers(String token,
+      {int? page, String? search}) async {
     // Construir la URL manualmente según los parámetros
     String url = '$baseUrl/infoall';
 
@@ -210,7 +214,8 @@ class UserService {
       url += '?search=$search';
     }
     if (page != null) {
-      url += search != null && search.isNotEmpty ? '&page=$page' : '?page=$page';
+      url +=
+          search != null && search.isNotEmpty ? '&page=$page' : '?page=$page';
     }
 
     final response = await http.get(Uri.parse(url), headers: {
@@ -225,7 +230,8 @@ class UserService {
   }
 
   // Actualizar la información de un usuario
-  Future<User> updateInfo(String token, int id, Map<String, dynamic> userData) async {
+  Future<User> updateInfo(
+      String token, int id, Map<String, dynamic> userData) async {
     final url = Uri.parse('$baseUrl/info/$id');
     final response = await http.put(
       url,

@@ -83,7 +83,7 @@ class UserProvider extends ChangeNotifier {
   }
 
   // Crear un nuevo usuario
-  Future<void> createUser(Map<String, User> userData) async {
+  Future<void> createUser(Map<String, dynamic> userData) async {
     try {
       _isLoading = true;
       notifyListeners();
@@ -91,6 +91,7 @@ class UserProvider extends ChangeNotifier {
       final token = await AuthService.getUserToken();
       if (token == null) throw Exception('No authentication token found');
 
+      // Enviamos los datos directamente sin el wrapper 'user'
       User newUser = await _userService.createUser(token, userData);
       _pagination?.users.add(newUser);
       _isLoading = false;
@@ -99,6 +100,7 @@ class UserProvider extends ChangeNotifier {
       _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
+      rethrow;
     }
   }
 

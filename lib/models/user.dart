@@ -14,38 +14,44 @@ class User {
   final String? anexo;
 
   User({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.estado,
-    required this.rol,
-    required this.ultimaConexion,
-    required this.telefono,
+    this.id,
+    this.name,
+    this.email,
+    this.estado,
+    this.rol,
+    this.ultimaConexion,
+    this.telefono,
     this.emailVerifiedAt,
-    required this.createdAt,
-    required this.updatedAt,
+    this.createdAt,
+    this.updatedAt,
     this.deletedAt,
-    required this.admin,
-    required this.anexo,
+    this.admin,
+    this.anexo,
   });
 
   // Método para convertir JSON en un objeto User
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'],
-      name: json['name'],
-      email: json['email'],
-      estado: json['estado'],
-      rol: json['rol'],
-      ultimaConexion: json['ultima_conexion'],
-      telefono: json['telefono'],
-      emailVerifiedAt: json['email_verified_at'],
-      createdAt: json['created_at'],
-      updatedAt: json['updated_at'],
-      deletedAt: json['deleted_at'],
-      admin:
-          json['admin'].toString(), // Convertir a String por si es int o bool
-      anexo: json['anexo'],
+      id: json['id'] != null ? json['id'] as int : null,
+      name: json['name'] != null ? json['name'] as String : null,
+      email: json['email'] != null ? json['email'] as String : null,
+      estado: json['estado'] != null ? json['estado'] as String : null,
+      rol: json['rol'] != null ? json['rol'] as String : null,
+      ultimaConexion: json['ultima_conexion'] != null
+          ? json['ultima_conexion'] as String
+          : null,
+      telefono: json['telefono'] != null ? json['telefono'] as String : null,
+      emailVerifiedAt: json['email_verified_at'] != null
+          ? json['email_verified_at'] as String
+          : null,
+      createdAt:
+          json['created_at'] != null ? json['created_at'] as String : null,
+      updatedAt:
+          json['updated_at'] != null ? json['updated_at'] as String : null,
+      deletedAt:
+          json['deleted_at'] != null ? json['deleted_at'] as String : null,
+      admin: json['admin'] != null ? json['admin'].toString() : null,
+      anexo: json['anexo'] != null ? json['anexo'] as String : null,
     );
   }
 
@@ -53,7 +59,7 @@ class User {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {};
 
-    // Añadir solo los atributos que no son null o "null"
+    // Solo incluir los campos que no son null
     if (id != null) data['id'] = id;
     if (name != null) data['name'] = name;
     if (email != null) data['email'] = email;
@@ -65,7 +71,7 @@ class User {
     if (createdAt != null) data['created_at'] = createdAt;
     if (updatedAt != null) data['updated_at'] = updatedAt;
     if (deletedAt != null) data['deleted_at'] = deletedAt;
-    if (admin != null && admin != "null") data['admin'] = admin; // Excluir si es "null"
+    if (admin != null) data['admin'] = admin;
     if (anexo != null) data['anexo'] = anexo;
 
     return data;

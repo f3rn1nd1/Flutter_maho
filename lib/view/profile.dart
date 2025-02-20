@@ -230,8 +230,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     'telefono': _phoneController.text,
                   };
 
-                  final userProvider = UserProvider();
-                  await userProvider.updateCurrentUser(
+                  // Usar context.read para obtener el provider
+                  await context.read<UserProvider>().updateCurrentUser(
                       userData['id'], User.fromJson(updatedUser));
 
                   // Actualizar el estado local directamente

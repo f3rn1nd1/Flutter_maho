@@ -61,7 +61,6 @@ class SearchTableState extends State<SearchTable> {
     });
   }
 
-
   @override
   void dispose() {
     _searchController.dispose();
@@ -73,19 +72,32 @@ class SearchTableState extends State<SearchTable> {
     if (query.isEmpty) {
       _loadPage(1);
     } else {
-      if (_selectedView == 'active') {
-        userProvider.getUsers(page: 1, search: query).then((_) {
-          setState(() {
-            _filteredUsers = userProvider.users;
+      // Obtener datos del usuario actual para verificar si es admin
+      AuthService.getUserData().then((userData) {
+        bool isAdmin = userData != null && userData['admin']?.toString() == "1";
+
+        if (_selectedView == 'active') {
+          if (isAdmin) {
+            userProvider.getUsers(page: 1, search: query).then((_) {
+              setState(() {
+                _filteredUsers = userProvider.users;
+              });
+            });
+          } else {
+            userProvider.infoUsers(page: 1, search: query).then((_) {
+              setState(() {
+                _filteredUsers = userProvider.users;
+              });
+            });
+          }
+        } else {
+          userProvider.getTrashUsers(page: 1, search: query).then((_) {
+            setState(() {
+              _filteredUsers = userProvider.users;
+            });
           });
-        });
-      } else {
-        userProvider.getTrashUsers(page: 1, search: query).then((_) {
-          setState(() {
-            _filteredUsers = userProvider.users;
-          });
-        });
-      }
+        }
+      });
     }
   }
 
@@ -430,19 +442,19 @@ class SearchTableState extends State<SearchTable> {
                   ],
                 ),
                 const Divider(),
-                Text("Nombre: ${user.name}"),
+                Text("Nombre: ${user.name ?? '-'}"),
                 const SizedBox(height: 8),
-                Text("Correo electronico: ${user.email}"),
+                Text("Correo electronico: ${user.email ?? '-'}"),
                 const SizedBox(height: 8),
-                Text("Estado: ${user.estado}"),
+                Text("Estado: ${user.estado ?? '-'}"),
                 const SizedBox(height: 8),
-                Text("Telefono: ${user.telefono}"),
+                Text("Telefono: ${user.telefono ?? '-'}"),
                 const SizedBox(height: 8),
-                Text("Anexo: ${user.anexo}"),
+                Text("Anexo: ${user.anexo ?? '-'}"),
                 const SizedBox(height: 8),
-                Text("Última Conexión: ${user.ultimaConexion}"),
+                Text("Última Conexión: ${user.ultimaConexion ?? '-'}"),
                 const SizedBox(height: 8),
-                Text("Rol: ${user.rol}"),
+                Text("Rol: ${user.rol ?? '-'}"),
                 const SizedBox(height: 16),
                 Align(
                   alignment: Alignment.centerRight,

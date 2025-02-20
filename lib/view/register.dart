@@ -185,10 +185,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         };
 
                         try {
-                          final response =
-                              await userProvider.register(userData);
-                          print(
-                              "Registro exitoso: $response"); // Añade este log
+                          // Usar context.read para obtener el provider
+                          final response = await context
+                              .read<UserProvider>()
+                              .register(userData);
+                          print("Registro exitoso: $response");
 
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Registro exitoso')),
@@ -200,16 +201,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                 builder: (context) => const LoginPage()),
                           );
                         } catch (e) {
-                          print("Error en registro: $e"); // Añade este log
+                          print("Error en registro: $e");
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('Error: $e')),
                           );
                         }
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                              builder: (context) => const LoginPage()),
-                          (route) => false,
-                        );
                       }
                     },
                     style: ElevatedButton.styleFrom(

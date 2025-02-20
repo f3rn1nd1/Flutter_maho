@@ -29,15 +29,10 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-
-  // PATRON SINGLETON
-  static final UserProvider _instance = UserProvider._internal();
-
-  factory UserProvider() {
-    return _instance;
+  // En su lugar, usar un constructor normal
+  UserProvider() {
+    initialize();
   }
-
-  UserProvider._internal();
 
   // ===========================
   // Segmento: Administrador
@@ -177,7 +172,8 @@ class UserProvider extends ChangeNotifier {
   Future<void> getTrashUsers({int? page, String? search}) async {
     try {
       _isLoading = true;
-      _users = []; // Limpiar la lista anterior para evitar conservar datos previos.
+      _users =
+          []; // Limpiar la lista anterior para evitar conservar datos previos.
       notifyListeners();
 
       final token = await AuthService.getUserToken();
@@ -187,8 +183,10 @@ class UserProvider extends ChangeNotifier {
       final int _page = page ?? 1;
       final String _search = search ?? "";
 
-      _pagination = await _userService.getTrashUsers(token, page: _page, search: _search);
-      _users = _pagination!.users; // Actualiza la lista con los datos obtenidos.
+      _pagination =
+          await _userService.getTrashUsers(token, page: _page, search: _search);
+      _users =
+          _pagination!.users; // Actualiza la lista con los datos obtenidos.
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
@@ -196,9 +194,6 @@ class UserProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-
-
 
   // Obtener usuarios con papelera
   Future<void> getUsersWithTrash() async {

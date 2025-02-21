@@ -18,6 +18,7 @@ class SearchTableState extends State<SearchTable> {
   List<User> _filteredUsers = [];
   int _currentPage = 1;
   String _selectedView = 'active';
+  bool _isLoading = false;
 
   void _onSearchPressed() {
     String query = _searchController.text.trim();
@@ -33,15 +34,30 @@ class SearchTableState extends State<SearchTable> {
   void _loadUsers() async {
     final userProvider = context.read<UserProvider>();
     final currentUserId = await AuthService.getCurrentUserId();
+    final userData = await AuthService.getUserData();
+    final isAdmin = userData != null && userData['admin']?.toString() == "1";
 
     try {
+      setState(() {
+        _isLoading = true;
+      });
+
       if (_selectedView == 'active') {
-        await userProvider.getUsers(
-          page: _currentPage,
-          search: _searchController.text.trim(),
-        );
-      } else {
-        // Si la vista es 'trash', usar getTrashUsers
+        if (isAdmin) {
+          print('Loading with getUsers (admin)'); // Debug log
+          await userProvider.getUsers(
+            page: _currentPage,
+            search: _searchController.text.trim(),
+          );
+        } else {
+          print('Loading with infoUsers (common user)'); // Debug log
+          await userProvider.infoUsers(
+            page: _currentPage,
+            search: _searchController.text.trim(),
+          );
+        }
+      } else if (isAdmin) {
+        print('Loading trash users (admin only)'); // Debug log
         await userProvider.getTrashUsers(
           page: _currentPage,
           search: _searchController.text.trim(),
@@ -52,8 +68,13 @@ class SearchTableState extends State<SearchTable> {
         _filteredUsers = userProvider.users
             .where((user) => user.id?.toString() != currentUserId)
             .toList();
+        _isLoading = false;
       });
     } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('Error loading users: $e'); // Debug log
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al cargar usuarios: ${e.toString()}'),
@@ -69,60 +90,119 @@ class SearchTableState extends State<SearchTable> {
     super.dispose();
   }
 
-  void _filterUsers(String query) {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    if (query.isEmpty) {
-      _loadPage(1);
-    } else {
-      // Obtener datos del usuario actual para verificar si es admin
-      AuthService.getUserData().then((userData) {
-        bool isAdmin = userData != null && userData['admin']?.toString() == "1";
+  void _handleViewChange(String? newView) async {
+    final userData = await AuthService.getUserData();
+    final isAdmin = userData != null && userData['admin']?.toString() == "1";
 
-        if (_selectedView == 'active') {
-          if (isAdmin) {
-            userProvider.getUsers(page: 1, search: query).then((_) {
-              setState(() {
-                _filteredUsers = userProvider.users;
-                _currentPage = 1;
-              });
-            });
-          } else {
-            userProvider.infoUsers(page: 1, search: query).then((_) {
-              setState(() {
-                _filteredUsers = userProvider.users;
-                _currentPage = 1;
-              });
-            });
-          }
-        } else {
-          // Para usuarios eliminados
-          userProvider.getTrashUsers(page: 1, search: query).then((_) {
-            setState(() {
-              _filteredUsers = userProvider.users;
-              _currentPage = 1;
-            });
-          });
-        }
+    if (newView == 'trash' && !isAdmin) {
+      // Si no es admin y trata de ver eliminados, mostrar alerta
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No tienes permisos para ver usuarios eliminados'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      // Mantener la vista en activos
+      setState(() {
+        _selectedView = 'active';
       });
+      return;
+    }
+
+    setState(() {
+      _selectedView = newView ?? 'active';
+      _currentPage = 1;
+    });
+    _loadUsers();
+  }
+
+  void _loadPage(int page) async {
+    final userData = await AuthService.getUserData();
+    final isAdmin = userData != null && userData['admin']?.toString() == "1";
+
+    setState(() {
+      _currentPage = page;
+      _isLoading = true;
+    });
+
+    try {
+      final userProvider = context.read<UserProvider>();
+      if (_selectedView == 'active') {
+        if (isAdmin) {
+          await userProvider.getUsers(
+            page: page,
+            search: _searchController.text.trim(),
+          );
+        } else {
+          await userProvider.infoUsers(
+            page: page,
+            search: _searchController.text.trim(),
+          );
+        }
+      } else if (isAdmin) {
+        await userProvider.getTrashUsers(
+          page: page,
+          search: _searchController.text.trim(),
+        );
+      }
+
+      setState(() {
+        _filteredUsers = userProvider.users;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al cargar usuarios: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
-  void _loadPage(int page) {
+  void _filterUsers(String query) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    if (_selectedView == 'active') {
-      userProvider.getUsers(page: page).then((_) {
-        setState(() {
-          _filteredUsers = userProvider.users;
-          _currentPage = page;
-        });
+    final userData = await AuthService.getUserData();
+    final isAdmin = userData != null && userData['admin']?.toString() == "1";
+
+    if (query.isEmpty) {
+      _loadPage(1);
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      if (_selectedView == 'active') {
+        if (isAdmin) {
+          await userProvider.getUsers(page: 1, search: query);
+        } else {
+          await userProvider.infoUsers(page: 1, search: query);
+        }
+      } else if (isAdmin) {
+        await userProvider.getTrashUsers(page: 1, search: query);
+      }
+
+      setState(() {
+        _filteredUsers = userProvider.users;
+        _currentPage = 1;
+        _isLoading = false;
       });
-    } else {
-      userProvider.getTrashUsers(page: page).then((_) {
-        setState(() {
-          _filteredUsers = userProvider.users;
-          _currentPage = page;
-        });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al buscar usuarios: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -433,22 +513,25 @@ class SearchTableState extends State<SearchTable> {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment(value: 'active', label: Text('Activos')),
-                    ButtonSegment(value: 'trash', label: Text('Eliminados')),
+                  segments: [
+                    const ButtonSegment<String>(
+                      value: 'active',
+                      label: Text('Activos'),
+                    ),
+                    if (isAdmin) // Solo mostrar el segmento de eliminados si es admin
+                      const ButtonSegment<String>(
+                        value: 'trash',
+                        label: Text('Eliminados'),
+                      ),
                   ],
-                  selected: <String>{_selectedView},
+                  selected: {_selectedView},
                   onSelectionChanged: (Set<String> newSelection) {
-                    setState(() {
-                      _selectedView = newSelection.first;
-                      _currentPage = 1;
-                    });
-                    _loadUsers();
+                    _handleViewChange(newSelection.first);
                   },
                 ),
               ),
               // Indicador de carga o mensaje de vacío
-              if (userProvider.isLoading)
+              if (_isLoading)
                 const Padding(
                   padding: EdgeInsets.all(16.0),
                   child: CircularProgressIndicator(),

@@ -182,69 +182,160 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _showEditProfileDialog(
       BuildContext context, Map<String, dynamic> userData) {
-    final _formKey = GlobalKey<FormState>();
-    final _nameController = TextEditingController(text: userData['name']);
-    final _emailController = TextEditingController(text: userData['email']);
-    final _phoneController = TextEditingController(text: userData['telefono']);
+    final formKey = GlobalKey<FormState>();
+    final nameController = TextEditingController(text: userData['name']);
+    final emailController = TextEditingController(text: userData['email']);
+    final passwordController = TextEditingController();
+    final passwordConfirmationController = TextEditingController();
+    final phoneController = TextEditingController(text: userData['telefono']);
+    final anexoController = TextEditingController(text: userData['anexo']);
+    String selectedRol = userData['rol'] ?? 'Editor';
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Editar Perfil'),
           content: Form(
-            key: _formKey,
+            key: formKey,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(labelText: 'Nombre'),
+                    controller: nameController,
+                    decoration: const InputDecoration(labelText: 'Nombre *'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese un nombre';
+                      }
+                      return null;
+                    },
                   ),
                   TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
+                    controller: emailController,
+                    decoration: const InputDecoration(labelText: 'Email *'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese un email';
+                      }
+                      if (!value.contains('@')) {
+                        return 'Por favor ingrese un email válido';
+                      }
+                      return null;
+                    },
                   ),
                   TextFormField(
-                    controller: _phoneController,
+                    controller: passwordController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nueva Contraseña',
+                      helperText: 'Dejar en blanco para mantener la actual',
+                    ),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value != null &&
+                          value.isNotEmpty &&
+                          value.length < 6) {
+                        return 'La contraseña debe tener al menos 6 caracteres';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: passwordConfirmationController,
+                    decoration: const InputDecoration(
+                      labelText: 'Confirmar Nueva Contraseña',
+                    ),
+                    obscureText: true,
+                    validator: (value) {
+                      if (passwordController.text.isNotEmpty &&
+                          value != passwordController.text) {
+                        return 'Las contraseñas no coinciden';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: phoneController,
                     decoration: const InputDecoration(labelText: 'Teléfono'),
                   ),
+                  TextFormField(
+                    controller: anexoController,
+                    decoration: const InputDecoration(labelText: 'Anexo'),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: selectedRol,
+                    decoration: const InputDecoration(labelText: 'Rol *'),
+                    items: const [
+                      DropdownMenuItem(value: 'Editor', child: Text('Editor')),
+                      DropdownMenuItem(value: 'Admin', child: Text('Admin')),
+                    ],
+                    onChanged: (value) {
+                      selectedRol = value!;
+                    },
+                  )
                 ],
               ),
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () async {
-                if (_formKey.currentState!.validate()) {
+                if (formKey.currentState!.validate()) {
                   final updatedUser = {
-                    'name': _nameController.text,
-                    'email': _emailController.text,
-                    'telefono': _phoneController.text,
+                    'name': nameController.text,
+                    'email': emailController.text,
+                    'rol': selectedRol,
+                    'telefono': phoneController.text,
+                    'anexo': anexoController.text,
+                    'estado': userData['estado'] ?? 'activo',
                   };
 
-                  // Usar context.read para obtener el provider
-                  await context.read<UserProvider>().updateCurrentUser(
-                      userData['id'], User.fromJson(updatedUser));
+                  if (passwordController.text.isNotEmpty) {
+                    updatedUser['password'] = passwordController.text;
+                    updatedUser['password_confirmation'] =
+                        passwordConfirmationController.text;
+                  }
 
-                  // Actualizar el estado local directamente
-                  setState(() {
-                    _currentUser = {
+                  try {
+                    await context.read<UserProvider>().updateCurrentUser(
+                        userData['id'], User.fromJson(updatedUser));
+
+                    setState(() {
+                      _currentUser = {
+                        ..._currentUser!,
+                        ...updatedUser,
+                      };
+                    });
+
+                    final newUserData = {
                       ..._currentUser!,
-                      'name': _nameController.text,
-                      'email': _emailController.text,
-                      'telefono': _phoneController.text,
+                      ...updatedUser,
                     };
-                  });
+                    await AuthService.saveUserData(
+                        await AuthService.getUserToken() ?? '', newUserData);
 
-                  Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Perfil actualizado exitosamente'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content:
+                            Text('Error al actualizar perfil: ${e.toString()}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 }
               },
               child: const Text('Guardar'),

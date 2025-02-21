@@ -113,8 +113,8 @@ class UserProvider extends ChangeNotifier {
       final token = await AuthService.getUserToken();
       if (token == null) throw Exception('No authentication token found');
 
-      User updatedUser = await _userService.updateUser(
-          token, id, userData.toJson() as Map<String, dynamic>);
+      User updatedUser =
+          await _userService.updateUser(token, id, userData.toJson());
       int index = _pagination!.users.indexWhere((user) => user.id == id);
       if (index != -1) {
         _users[index] = updatedUser;
@@ -182,11 +182,11 @@ class UserProvider extends ChangeNotifier {
       if (token == null) throw Exception('No authentication token found');
 
       // Usar valores predeterminados si no se reciben
-      final int _page = page ?? 1;
-      final String _search = search ?? "";
+      final int page0 = page ?? 1;
+      final String search0 = search ?? "";
 
       _pagination =
-          await _userService.getTrashUsers(token, page: _page, search: _search);
+          await _userService.getTrashUsers(token, page: page0, search: search0);
       _users =
           _pagination!.users; // Actualiza la lista con los datos obtenidos.
     } catch (e) {
@@ -316,8 +316,8 @@ class UserProvider extends ChangeNotifier {
       final token = await AuthService.getUserToken();
       if (token == null) throw Exception('No authentication token found');
 
-      User updatedUser = await _userService.updateInfo(
-          token, id, userData.toJson() as Map<String, dynamic>);
+      User updatedUser =
+          await _userService.updateInfo(token, id, userData.toJson());
       int index = _pagination!.users.indexWhere((user) => user.id == id);
       if (index != -1) {
         _users[index] = updatedUser;
@@ -389,6 +389,27 @@ class UserProvider extends ChangeNotifier {
       notifyListeners();
       return response; // Retorna la respuesta completa del servicio
     } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> reloadAllData() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Recargar datos del usuario actual
+      await initialize();
+
+      // Recargar lista de usuarios
+      await getUsers();
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
       rethrow;
     }
   }

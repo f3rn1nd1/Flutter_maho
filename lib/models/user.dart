@@ -50,7 +50,7 @@ class User {
           json['updated_at'] != null ? json['updated_at'] as String : null,
       deletedAt:
           json['deleted_at'] != null ? json['deleted_at'] as String : null,
-      admin: json['admin'] != null ? json['admin'].toString() : null,
+      admin: json['admin']?.toString(),
       anexo: json['anexo'] != null ? json['anexo'] as String : null,
     );
   }

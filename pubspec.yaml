@@ -65,7 +65,7 @@ flutter:
   assets:
     - .env # Agrega esta línea
    
-    - assets/maho.png  
+    - assets/maho.png
 
 
   # To add assets to your application, add an assets section, like this:

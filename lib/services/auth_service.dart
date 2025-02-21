@@ -89,4 +89,14 @@ class AuthService {
       throw Exception('Error al registrar usuario: ${response.statusCode}');
     }
   }
+
+  static Future<String?> getCurrentUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userData = prefs.getString('userData');
+    if (userData != null) {
+      final Map<String, dynamic> data = json.decode(userData);
+      return data['id']?.toString();
+    }
+    return null;
+  }
 }

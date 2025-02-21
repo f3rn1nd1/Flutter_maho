@@ -103,21 +103,6 @@ class _LoginPageState extends State<LoginPage> {
                           EdgeInsets.symmetric(vertical: 12, horizontal: 10),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  // Casilla de "Recuérdame"
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _rememberMe,
-                        onChanged: (value) {
-                          setState(() {
-                            _rememberMe = value ?? false;
-                          });
-                        },
-                      ),
-                      const Text('Recuérdame'),
-                    ],
-                  ),
                   const SizedBox(height: 16),
                   // Botón de inicio de sesión
                   ElevatedButton(
@@ -129,16 +114,8 @@ class _LoginPageState extends State<LoginPage> {
                     child: const Text('Ingresar'),
                   ),
                   const SizedBox(height: 16),
-                  // Enlaces adicionales
                   TextButton(
                     onPressed: () {
-                      // Acción para recuperar contraseña
-                    },
-                    child: const Text('¿Olvidaste tu contraseña?'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // Navegar a la vista de registro (RegisterPage)
                       Navigator.push(
                         context,
                         MaterialPageRoute(
